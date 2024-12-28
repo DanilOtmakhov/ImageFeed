@@ -20,22 +20,21 @@ final class ImagesListViewController: UIViewController {
         formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
+    private let currentDate = Date()
     
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
-        
     }
     
     //MARK: - Private Methods
-    func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
+    private func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         guard let image = UIImage(named: photosNames[indexPath.row]) else {
             return
         }
         cell.cellImageView.image = image
-        cell.dateLabel.text = dateFormatter.string(from: Date())
+        cell.dateLabel.text = dateFormatter.string(from: currentDate)
         cell.likeButton.setImage(indexPath.row % 2 == 0 ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
     }
 
@@ -46,10 +45,10 @@ extension ImagesListViewController: UITableViewDataSource {
         photosNames.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath)
-        
-        guard let imageListCell = cell as? ImagesListCell else {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {guard let imageListCell = tableView.dequeueReusableCell(
+            withIdentifier: ImagesListCell.reuseIdentifier,
+            for: indexPath
+        ) as? ImagesListCell else {
             return UITableViewCell()
         }
         
