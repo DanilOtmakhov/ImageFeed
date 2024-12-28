@@ -58,7 +58,7 @@
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                     </subviews>
-                                                    <color key="backgroundColor" name="YP Gradient"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <constraints>
                                                         <constraint firstItem="h0s-Tv-7r9" firstAttribute="leading" secondItem="874-po-841" secondAttribute="leading" constant="8" id="PLp-8k-91f"/>
                                                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="h0s-Tv-7r9" secondAttribute="trailing" constant="8" id="YQY-pw-NlE"/>
@@ -119,9 +119,6 @@
         <image name="like_on" width="42" height="42"/>
         <namedColor name="YP Black">
             <color red="0.10196078431372549" green="0.10588235294117647" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </namedColor>
-        <namedColor name="YP Gradient">
-            <color red="0.10196078431372549" green="0.10588235294117647" blue="0.13333333333333333" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
     </resources>
 </document>
