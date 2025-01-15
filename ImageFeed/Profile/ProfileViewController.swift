@@ -12,33 +12,32 @@ final class ProfileViewController: UIViewController {
     //MARK: - Private Properties
     private let profileImageView: UIImageView = {
         $0.image = UIImage(named: "userpick")
-        $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UIImageView())
+    
     private let nameLabel: UILabel = {
         $0.text = "Екатерина Новикова"
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         $0.textColor = .ypWhite
-        $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UILabel())
+    
     private let loginLabel: UILabel = {
         $0.text = "@ekaterina_nov"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypGray
-        $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UILabel())
+    
     private let descriptionLabel: UILabel = {
         $0.text = "Hello, world!"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypWhite
-        $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UILabel())
+    
     private let logoutButton: UIButton = {
         $0.setImage(UIImage(named: "logout"), for: .normal)
-        $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UIButton())
     
@@ -52,11 +51,10 @@ final class ProfileViewController: UIViewController {
     private func setupViewController() {
         view.backgroundColor = .ypBlack
         
-        view.addSubview(profileImageView)
-        view.addSubview(nameLabel)
-        view.addSubview(loginLabel)
-        view.addSubview(descriptionLabel)
-        view.addSubview(logoutButton)
+        [profileImageView, nameLabel, loginLabel, descriptionLabel, logoutButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             profileImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
