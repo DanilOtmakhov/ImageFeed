@@ -1,5 +1,5 @@
 //
-// UIView+Extensions.swift
+// UIView+addGradient.swift
 //  ImageFeed
 //
 //  Created by Danil Otmakhov on 27.12.2024.

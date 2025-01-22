@@ -10,12 +10,14 @@ import UIKit
 final class ImagesListCell: UITableViewCell {
     
     //MARK: - IB Outlets
-    @IBOutlet weak var cellImageView: UIImageView!
-    @IBOutlet weak var dateLabel: UILabel!
-    @IBOutlet weak var likeButton: UIButton!
-    @IBOutlet weak var gradientView: UIView!
+    
+    @IBOutlet var cellImageView: UIImageView!
+    @IBOutlet var dateLabel: UILabel!
+    @IBOutlet var likeButton: UIButton!
+    @IBOutlet private var gradientView: UIView!
     
     //MARK: - Public Properties
+    
     static let reuseIdentifier = "ImagesListCell"
     
     override func layoutSubviews() {
