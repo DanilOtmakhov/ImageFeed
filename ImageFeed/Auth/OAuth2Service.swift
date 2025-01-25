@@ -13,6 +13,13 @@ final class OAuth2Service {
     
     static let shared = OAuth2Service()
     
+    //MARK: - Private Properties
+    
+    private let decoder: JSONDecoder = {
+        $0.keyDecodingStrategy = .convertFromSnakeCase
+        return $0
+    }(JSONDecoder())
+    
     //MARK: - Initializer
     
     private init() {}
@@ -45,11 +52,12 @@ final class OAuth2Service {
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         let request = makeOAuthTokenRequest(code: code)
         
-        let task = URLSession.shared.data(for: request) { result in
+        let task = URLSession.shared.data(for: request) { [weak self] result in
             switch result {
             case .success(let data):
                 do {
-                    let responseBody = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
+                    guard let self else { return }
+                    let responseBody = try self.decoder.decode(OAuthTokenResponseBody.self, from: data)
                     completion(.success(responseBody.tokenType))
                 } catch {
                     print("Failed to decode OAuth token response: \(error.localizedDescription)")

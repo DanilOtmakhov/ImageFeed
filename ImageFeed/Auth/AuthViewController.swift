@@ -18,12 +18,6 @@ final class AuthViewController: UIViewController {
     private let showWebViewSegueIdentifier = "ShowWebView"
     private let oAuth2Service = OAuth2Service.shared
     private lazy var oAuth2TokenStorage = OAuth2TokenStorage()
-
-    //MARK: - Lifecycle
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
 }
 
 extension AuthViewController {
