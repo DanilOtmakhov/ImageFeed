@@ -10,6 +10,7 @@ import UIKit
 final class ProfileViewController: UIViewController {
     
     //MARK: - Private Properties
+    
     private let profileImageView: UIImageView = {
         $0.image = UIImage(named: "userpick")
         return $0
@@ -42,12 +43,14 @@ final class ProfileViewController: UIViewController {
     }(UIButton())
     
     //MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
     }
     
     //MARK: - Private Methods
+    
     private func setupViewController() {
         view.backgroundColor = .ypBlack
         
