@@ -12,26 +12,26 @@ final class ProfileViewController: UIViewController {
     //MARK: - Private Properties
     
     private let profileImageView: UIImageView = {
-        $0.image = UIImage(named: "userpick")
+        $0.image = UIImage(named: "userpick_no_photo")
         return $0
     }(UIImageView())
     
-    private let nameLabel: UILabel = {
-        $0.text = "Екатерина Новикова"
+    private lazy var nameLabel: UILabel = {
+        $0.text = profile?.name
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         $0.textColor = .ypWhite
         return $0
     }(UILabel())
     
-    private let loginLabel: UILabel = {
-        $0.text = "@ekaterina_nov"
+    private lazy var loginLabel: UILabel = {
+        $0.text = profile?.loginName
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypGray
         return $0
     }(UILabel())
     
-    private let descriptionLabel: UILabel = {
-        $0.text = "Hello, world!"
+    private lazy var descriptionLabel: UILabel = {
+        $0.text = profile?.bio
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypWhite
         return $0
@@ -42,11 +42,27 @@ final class ProfileViewController: UIViewController {
         return $0
     }(UIButton())
     
+    private let profileService = ProfileService.shared
+    private var profile: Profile?
+    
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
+        profileService.fetchProfile { [weak self] result in
+            switch result {
+            case .success(let profileResult):
+                guard let self else { return }
+                self.profile = Profile(from: profileResult)
+                self.nameLabel.text = profile?.name
+                self.loginLabel.text = profile?.loginName
+                self.descriptionLabel.text = profile?.bio
+            case .failure(let error):
+                print(error.localizedDescription)
+                assertionFailure()
+            }
+        }
     }
     
     //MARK: - Private Methods

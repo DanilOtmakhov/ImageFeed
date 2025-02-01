@@ -7,6 +7,10 @@
 
 import Foundation
 
+enum AuthServiceError: Error {
+    case invalidRequest
+}
+
 final class OAuth2Service {
     
     //MARK: - Public Properties
@@ -14,7 +18,8 @@ final class OAuth2Service {
     static let shared = OAuth2Service()
     
     //MARK: - Private Properties
-    
+    private var lastCode: String?
+    private var task: URLSessionTask?
     private let decoder: JSONDecoder = {
         $0.keyDecodingStrategy = .convertFromSnakeCase
         return $0
@@ -26,7 +31,7 @@ final class OAuth2Service {
     
     //MARK: - Public Methods
         
-    func makeOAuthTokenRequest(code: String) -> URLRequest {
+    func makeOAuthTokenRequest(code: String) -> URLRequest? {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "unsplash.com"
@@ -40,7 +45,8 @@ final class OAuth2Service {
         ]
         
         guard let url = urlComponents.url else {
-            preconditionFailure("Unable to construct unsplashAuthorizeURL")
+            assertionFailure("Unable to construct unsplashAuthorizeURL")
+            return nil
         }
         
         var request = URLRequest(url: url)
@@ -50,7 +56,28 @@ final class OAuth2Service {
     }
     
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
-        let request = makeOAuthTokenRequest(code: code)
+        assert(Thread.isMainThread)
+        if task != nil {
+            if lastCode != code {
+                task?.cancel()
+            } else {
+                completion(.failure(AuthServiceError.invalidRequest))
+                return
+            }
+        } else {
+            if lastCode == code {
+                completion(.failure(AuthServiceError.invalidRequest))
+                return
+            }
+        }
+        lastCode = code
+        
+        guard
+            let request = makeOAuthTokenRequest(code: code)
+        else {
+            completion(.failure(AuthServiceError.invalidRequest))
+            return
+        }
         
         let task = URLSession.shared.data(for: request) { [weak self] result in
             switch result {
@@ -58,7 +85,7 @@ final class OAuth2Service {
                 do {
                     guard let self else { return }
                     let responseBody = try self.decoder.decode(OAuthTokenResponseBody.self, from: data)
-                    completion(.success(responseBody.tokenType))
+                    completion(.success(responseBody.accessToken))
                 } catch {
                     print("Failed to decode OAuth token response: \(error.localizedDescription)")
                     completion(.failure(error))
@@ -66,7 +93,10 @@ final class OAuth2Service {
             case .failure(let error):
                 completion(.failure(error))
             }
+            self?.task = nil
+            self?.lastCode = nil
         }
+        self.task = task
         task.resume()
     }
 }
