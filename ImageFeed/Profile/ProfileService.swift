@@ -20,9 +20,6 @@ final class ProfileService {
     //MARK: - Private Properties
     
     private(set) var profile: Profile?
-    
-    //MARK: - Private Methods
-    
     private var task: URLSessionTask?
     private let decoder: JSONDecoder = {
         $0.keyDecodingStrategy = .convertFromSnakeCase
@@ -34,24 +31,6 @@ final class ProfileService {
     private init() {}
     
     //MARK: - Public Methods
-    
-    func makeProfileRequest(_ token: String) -> URLRequest? {
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "api.unsplash.com"
-        urlComponents.path = "/me"
-        
-        guard let url = urlComponents.url else {
-            assertionFailure("Unable to construct profileRequest")
-            return nil
-        }
-                
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        return request
-    }
     
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         if task != nil {
@@ -71,8 +50,8 @@ final class ProfileService {
             switch result {
             case .success(let data):
                 do {
-                    let profileData = try self.decoder.decode(ProfileResult.self, from: data)
-                    let profile = Profile(from: profileData)
+                    let profileResult = try self.decoder.decode(ProfileResult.self, from: data)
+                    let profile = Profile(from: profileResult)
                     self.profile = profile
                     completion(.success(profile))
                 } catch {
@@ -87,5 +66,27 @@ final class ProfileService {
         }
         self.task = task
         task.resume()
+    }
+    
+    //MARK: - Private Methods
+    
+    private func makeProfileRequest(_ token: String) -> URLRequest? {
+        var urlComponents = URLComponents()
+        urlComponents.scheme = "https"
+        urlComponents.host = "api.unsplash.com"
+        urlComponents.path = "/me"
+        
+        guard
+            let url = urlComponents.url
+        else {
+            assertionFailure("Unable to construct profileRequest")
+            return nil
+        }
+                
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        return request
     }
 }
