@@ -198,10 +198,10 @@
             </objects>
             <point key="canvasLocation" x="-15" y="448"/>
         </scene>
-        <!--SplashScreen-->
+        <!--Splash-->
         <scene sceneID="jRh-gH-6o4">
             <objects>
-                <viewController title="SplashScreen" id="hWc-LF-LM3" customClass="SplashScreenViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController title="Splash" id="hWc-LF-LM3" customClass="SplashViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="iX7-iE-fdg">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

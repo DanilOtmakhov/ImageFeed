@@ -17,31 +17,31 @@ final class ProfileService {
     
     static let shared = ProfileService()
     
+    //MARK: - Private Properties
+    
+    private(set) var profile: Profile?
+    
     //MARK: - Private Methods
     
     private var task: URLSessionTask?
-    private lazy var oAuth2TokenStorage = OAuth2TokenStorage()
     private let decoder: JSONDecoder = {
         $0.keyDecodingStrategy = .convertFromSnakeCase
         return $0
     }(JSONDecoder())
     
-    //MARK: - Initializer
+    //MARK: - Initialization
     
     private init() {}
     
     //MARK: - Public Methods
     
-    func makeProfileRequest() -> URLRequest? {
+    func makeProfileRequest(_ token: String) -> URLRequest? {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "api.unsplash.com"
         urlComponents.path = "/me"
         
-        guard
-            let url = urlComponents.url,
-            let token = oAuth2TokenStorage.token
-        else {
+        guard let url = urlComponents.url else {
             assertionFailure("Unable to construct profileRequest")
             return nil
         }
@@ -53,25 +53,28 @@ final class ProfileService {
         return request
     }
     
-    func fetchProfile(completion: @escaping (Result<ProfileResult, Error>) -> Void) {
+    func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         if task != nil {
             task?.cancel()
         }
         
         guard
-            let request = makeProfileRequest()
+            let request = makeProfileRequest(token)
         else {
             completion(.failure(ProfileServiceError.invalidRequest))
             return
         }
         
         let task = URLSession.shared.data(for: request) { [weak self] result in
+            guard let self else { return }
+            
             switch result {
             case .success(let data):
                 do {
-                    guard let self else { return }
                     let profileData = try self.decoder.decode(ProfileResult.self, from: data)
-                    completion(.success(profileData))
+                    let profile = Profile(from: profileData)
+                    self.profile = profile
+                    completion(.success(profile))
                 } catch {
                     print("Failed to decode Profile response: \(error.localizedDescription)")
                     completion(.failure(error))
@@ -80,7 +83,7 @@ final class ProfileService {
                 completion(.failure(error))
             }
             
-            self?.task = nil
+            self.task = nil
         }
         self.task = task
         task.resume()

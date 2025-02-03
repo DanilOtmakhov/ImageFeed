@@ -17,21 +17,21 @@ final class ProfileViewController: UIViewController {
     }(UIImageView())
     
     private lazy var nameLabel: UILabel = {
-        $0.text = profile?.name
+        $0.text = "Екатерина Новикова"
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         $0.textColor = .ypWhite
         return $0
     }(UILabel())
     
     private lazy var loginLabel: UILabel = {
-        $0.text = profile?.loginName
+        $0.text = "@ekaterina_nov"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypGray
         return $0
     }(UILabel())
     
     private lazy var descriptionLabel: UILabel = {
-        $0.text = profile?.bio
+        $0.text = "Hello, world!"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypWhite
         return $0
@@ -42,27 +42,16 @@ final class ProfileViewController: UIViewController {
         return $0
     }(UIButton())
     
-    private let profileService = ProfileService.shared
-    private var profile: Profile?
+    let profileService = ProfileService.shared
     
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
-        profileService.fetchProfile { [weak self] result in
-            switch result {
-            case .success(let profileResult):
-                guard let self else { return }
-                self.profile = Profile(from: profileResult)
-                self.nameLabel.text = profile?.name
-                self.loginLabel.text = profile?.loginName
-                self.descriptionLabel.text = profile?.bio
-            case .failure(let error):
-                print(error.localizedDescription)
-                assertionFailure()
-            }
-        }
+        
+        guard let profile = profileService.profile else { return }
+        updateProfileDetails(profile: profile)
     }
     
     //MARK: - Private Methods
@@ -95,5 +84,11 @@ final class ProfileViewController: UIViewController {
             logoutButton.widthAnchor.constraint(equalToConstant: 48),
             logoutButton.heightAnchor.constraint(equalToConstant: 48)
         ])
+    }
+    
+    private func updateProfileDetails(profile: Profile) {
+        nameLabel.text = profile.name
+        loginLabel.text = profile.loginName
+        descriptionLabel.text = profile.bio
     }
 }

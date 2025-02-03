@@ -25,7 +25,7 @@ final class OAuth2Service {
         return $0
     }(JSONDecoder())
     
-    //MARK: - Initializer
+    //MARK: - Initialization
     
     private init() {}
     
@@ -80,10 +80,11 @@ final class OAuth2Service {
         }
         
         let task = URLSession.shared.data(for: request) { [weak self] result in
+            guard let self else { return }
+            
             switch result {
             case .success(let data):
                 do {
-                    guard let self else { return }
                     let responseBody = try self.decoder.decode(OAuthTokenResponseBody.self, from: data)
                     completion(.success(responseBody.accessToken))
                 } catch {
@@ -93,8 +94,8 @@ final class OAuth2Service {
             case .failure(let error):
                 completion(.failure(error))
             }
-            self?.task = nil
-            self?.lastCode = nil
+            self.task = nil
+            self.lastCode = nil
         }
         self.task = task
         task.resume()

@@ -1,5 +1,5 @@
 //
-//  SplashScreenViewController.swift
+//  SplashViewController.swift
 //  ImageFeed
 //
 //  Created by Danil Otmakhov on 21.01.2025.
@@ -7,11 +7,12 @@
 
 import UIKit
 
-final class SplashScreenViewController: UIViewController {
+final class SplashViewController: UIViewController {
     
     //MARK: - Private Properties
     
-    private let oAuth2TokenStorage = OAuth2TokenStorage()
+    private lazy var oAuth2TokenStorage = OAuth2TokenStorage()
+    private lazy var profileService = ProfileService.shared
     private lazy var isAuthenticationCompleted = oAuth2TokenStorage.token != nil
     private let showAuthViewControllerSegueIdentifier = "ShowAuthViewController"
     
@@ -45,7 +46,7 @@ final class SplashScreenViewController: UIViewController {
     }
 }
 
-extension SplashScreenViewController {
+extension SplashViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == showAuthViewControllerSegueIdentifier {
             guard let viewController = segue.destination as? AuthViewController else {
@@ -62,8 +63,26 @@ extension SplashScreenViewController {
 
 //MARK: - AuthViewControllerDelegate
 
-extension SplashScreenViewController: AuthViewControllerDelegate {
+extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ vc: AuthViewController) {
-        switchToTabBarController()
+        vc.dismiss(animated: true)
+        
+        guard let token = oAuth2TokenStorage.token else { return }
+        
+        UIBlockingProgressHUD.show()
+        
+        profileService.fetchProfile(token) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            
+            switch result {
+            case .success:
+                self.switchToTabBarController()
+            case .failure:
+                // TODO: Show error
+                break
+            }
+        }
     }
 }
