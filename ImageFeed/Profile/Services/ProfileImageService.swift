@@ -16,10 +16,11 @@ final class ProfileImageService {
     //MARK: - Public Properties
     
     static let shared = ProfileImageService()
+    static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
     
     //MARK: - Private Properties
     
-    private(set) var avatarURL: String?
+    private(set) var profileImageURL: String?
     private var task: URLSessionTask?
     private let decoder: JSONDecoder = {
         $0.keyDecodingStrategy = .convertFromSnakeCase
@@ -46,19 +47,23 @@ final class ProfileImageService {
         
         let task = URLSession.shared.data(for: request) { [weak self] result in
             guard let self else { return }
-            
             switch result {
             case .success(let data):
                 do {
                     let userResult = try decoder.decode(UserResult.self, from: data)
-                    let avatarURL = userResult.profileImage.small
-                    self.avatarURL = avatarURL
-                    completion(.success(avatarURL))
+                    let profileImageURL = userResult.profileImage.small
+                    self.profileImageURL = profileImageURL
+                    completion(.success(profileImageURL))
+                    NotificationCenter.default
+                        .post(
+                            name: ProfileImageService.didChangeNotification,
+                            object: self)
                 } catch {
                     print("Failed to decode Profile Image response: \(error.localizedDescription)")
                     completion(.failure(error))
                 }
             case .failure(let error):
+                print("Error")
                 completion(.failure(error))
             }
             
@@ -73,10 +78,7 @@ final class ProfileImageService {
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
         urlComponents.host = "api.unsplash.com"
-        urlComponents.path = "/users"
-        urlComponents.queryItems = [
-            URLQueryItem(name: "username", value: username)
-        ]
+        urlComponents.path = "/users/\(username)"
         
         guard
             let url = urlComponents.url,
@@ -85,7 +87,7 @@ final class ProfileImageService {
             assertionFailure("Unable to construct profileRequest")
             return nil
         }
-                
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

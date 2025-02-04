@@ -80,7 +80,7 @@ extension SplashViewController: AuthViewControllerDelegate {
                 ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { _ in }
                 self.switchToTabBarController()
             case .failure:
-                // TODO: Show error
+                //TODO: Show error
                 break
             }
         }

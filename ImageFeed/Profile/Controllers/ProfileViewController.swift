@@ -37,12 +37,12 @@ final class ProfileViewController: UIViewController {
         return $0
     }(UILabel())
     
-    private let logoutButton: UIButton = {
+    private lazy var logoutButton: UIButton = {
         $0.setImage(UIImage(named: "logout"), for: .normal)
         return $0
     }(UIButton())
     
-    let profileService = ProfileService.shared
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     //MARK: - Lifecycle
     
@@ -50,8 +50,19 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         setupViewController()
         
-        guard let profile = profileService.profile else { return }
+        guard let profile = ProfileService.shared.profile else { return }
         updateProfileDetails(profile: profile)
+        
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                self.updateProfileImage()
+            }
+        updateProfileImage()
     }
     
     //MARK: - Private Methods
@@ -90,5 +101,15 @@ final class ProfileViewController: UIViewController {
         nameLabel.text = profile.name
         loginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
+    }
+    
+    func updateProfileImage() {
+        guard
+            let profileImageURL = ProfileImageService.shared.profileImageURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        
+        print(url)
+        //TODO: Update profileImage
     }
 }
