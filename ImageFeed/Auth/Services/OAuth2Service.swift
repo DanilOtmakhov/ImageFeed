@@ -79,21 +79,16 @@ final class OAuth2Service {
             return
         }
         
-        let task = URLSession.shared.data(for: request) { [weak self] result in
+        let task = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
             guard let self else { return }
             
             switch result {
-            case .success(let data):
-                do {
-                    let responseBody = try self.decoder.decode(OAuthTokenResponseBody.self, from: data)
-                    completion(.success(responseBody.accessToken))
-                } catch {
-                    print("Failed to decode OAuth token response: \(error.localizedDescription)")
-                    completion(.failure(error))
-                }
+            case .success(let responseBody):
+                completion(.success(responseBody.accessToken))
             case .failure(let error):
                 completion(.failure(error))
             }
+            
             self.task = nil
             self.lastCode = nil
         }

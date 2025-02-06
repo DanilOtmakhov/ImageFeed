@@ -44,20 +44,14 @@ final class ProfileService {
             return
         }
         
-        let task = URLSession.shared.data(for: request) { [weak self] result in
+        let task = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<ProfileResult, Error>) in
             guard let self else { return }
             
             switch result {
-            case .success(let data):
-                do {
-                    let profileResult = try self.decoder.decode(ProfileResult.self, from: data)
-                    let profile = Profile(from: profileResult)
-                    self.profile = profile
-                    completion(.success(profile))
-                } catch {
-                    print("Failed to decode Profile response: \(error.localizedDescription)")
-                    completion(.failure(error))
-                }
+            case .success(let profileResult):
+                let profile = Profile(from: profileResult)
+                self.profile = profile
+                completion(.success(profile))
             case .failure(let error):
                 completion(.failure(error))
             }
