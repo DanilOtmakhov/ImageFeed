@@ -40,6 +40,7 @@ final class ProfileViewController: UIViewController {
     
     private lazy var logoutButton: UIButton = {
         $0.setImage(UIImage(named: "logout"), for: .normal)
+        $0.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         return $0
     }(UIButton())
     
@@ -104,7 +105,7 @@ final class ProfileViewController: UIViewController {
         descriptionLabel.text = profile.bio
     }
     
-    func updateProfileImage() {
+    private func updateProfileImage() {
         guard
             let profileImageURL = ProfileImageService.shared.profileImageURL,
             let url = URL(string: profileImageURL)
@@ -115,5 +116,9 @@ final class ProfileViewController: UIViewController {
             with: url,
             options: [.processor(processor)]
         )
+    }
+    
+    @objc private func didTapLogoutButton() {
+        OAuth2TokenStorage().token = nil
     }
 }

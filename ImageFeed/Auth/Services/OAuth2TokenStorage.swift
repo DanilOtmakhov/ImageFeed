@@ -8,7 +8,7 @@
 import Foundation
 import SwiftKeychainWrapper
 
-class OAuth2TokenStorage {
+final class OAuth2TokenStorage {
     
     private enum Keys: String {
         case token
@@ -21,8 +21,11 @@ class OAuth2TokenStorage {
             return storage.string(forKey: Keys.token.rawValue)
         }
         set {
-            guard let newValue else { return }
-            storage.set(newValue, forKey: Keys.token.rawValue)
+            if let newValue {
+                storage.set(newValue, forKey: Keys.token.rawValue)
+            } else {
+                storage.removeObject(forKey: Keys.token.rawValue)
+            }
         }
     }
 }
