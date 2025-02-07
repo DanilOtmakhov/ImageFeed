@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftKeychainWrapper
 
 class OAuth2TokenStorage {
     
@@ -13,13 +14,14 @@ class OAuth2TokenStorage {
         case token
     }
     
-    private let storage: UserDefaults = .standard
+    private let storage: KeychainWrapper = .standard
     
     var token: String? {
         get {
             return storage.string(forKey: Keys.token.rawValue)
         }
         set {
+            guard let newValue else { return }
             storage.set(newValue, forKey: Keys.token.rawValue)
         }
     }

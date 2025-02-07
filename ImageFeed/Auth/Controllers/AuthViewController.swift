@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import ProgressHUD
 
 final class AuthViewController: UIViewController {
     
@@ -54,6 +53,15 @@ extension AuthViewController: WebViewViewControllerDelegate {
                 self.delegate?.didAuthenticate(self)
             case .failure(let error):
                 print("Failed to fetch OAuth token: \(error.localizedDescription)")
+                let alertController = UIAlertController(
+                    title: "Что-то пошло не так(",
+                    message: "Не удалось войти в систему",
+                    preferredStyle: .alert)
+                let alertAction = UIAlertAction(
+                    title: "Ок",
+                    style: .cancel)
+                alertController.addAction(alertAction)
+                self.present(alertController, animated: true)
             }
         }
     }

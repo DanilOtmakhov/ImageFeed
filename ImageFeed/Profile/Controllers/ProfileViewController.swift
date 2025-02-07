@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -109,7 +110,10 @@ final class ProfileViewController: UIViewController {
             let url = URL(string: profileImageURL)
         else { return }
         
-        print(url)
-        //TODO: Update profileImage
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        profileImageView.kf.setImage(
+            with: url,
+            options: [.processor(processor)]
+        )
     }
 }
