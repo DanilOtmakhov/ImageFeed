@@ -31,9 +31,10 @@ final class ProfileImageService {
     
     private init() {}
     
-    //MARK: - Public Properties
+    //MARK: - Public Methods
     
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
+        assert(Thread.isMainThread)
         if task != nil {
             task?.cancel()
         }
@@ -67,7 +68,7 @@ final class ProfileImageService {
         task.resume()
     }
     
-    //MARK: - Private Properties
+    //MARK: - Private Methods
     
     private func makeProfileImageURLRequest(_ username: String) -> URLRequest? {
         var urlComponents = URLComponents()
