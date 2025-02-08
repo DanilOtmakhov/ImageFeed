@@ -41,6 +41,7 @@ final class ProfileService {
         guard
             let request = makeProfileRequest(token)
         else {
+            //print("[ProfileService]: Error: Failed to request for token \(token)")
             completion(.failure(ProfileServiceError.invalidRequest))
             return
         }
@@ -66,22 +67,10 @@ final class ProfileService {
     //MARK: - Private Methods
     
     private func makeProfileRequest(_ token: String) -> URLRequest? {
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "api.unsplash.com"
-        urlComponents.path = "/me"
-        
-        guard
-            let url = urlComponents.url
-        else {
-            assertionFailure("Unable to construct profileRequest")
-            return nil
-        }
-                
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        return request
+        return URLRequest.makeRequest(
+            host: "api.unsplash.com",
+            path: "/me",
+            headers: ["Authorization": "Bearer \(token)"]
+        )
     }
 }

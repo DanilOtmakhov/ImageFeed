@@ -71,23 +71,15 @@ final class ProfileImageService {
     //MARK: - Private Methods
     
     private func makeProfileImageURLRequest(_ username: String) -> URLRequest? {
-        var urlComponents = URLComponents()
-        urlComponents.scheme = "https"
-        urlComponents.host = "api.unsplash.com"
-        urlComponents.path = "/users/\(username)"
-        
-        guard
-            let url = urlComponents.url,
-            let token = OAuth2TokenStorage().token
-        else {
-            assertionFailure("Unable to construct profileRequest")
+        guard let token = OAuth2TokenStorage().token else {
+            assertionFailure("Missing auth token")
             return nil
         }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
-        return request
+
+        return URLRequest.makeRequest(
+            host: "api.unsplash.com",
+            path: "/users/\(username)",
+            headers: ["Authorization": "Bearer \(token)"]
+        )
     }
 }
