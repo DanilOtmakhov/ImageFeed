@@ -7,10 +7,6 @@
 
 import Foundation
 
-enum ProfileServiceError: Error {
-    case invalidRequest
-}
-
 final class ProfileService {
     
     //MARK: - Public Properties
@@ -41,8 +37,9 @@ final class ProfileService {
         guard
             let request = makeProfileRequest(token)
         else {
-            //print("[ProfileService]: Error: Failed to request for token \(token)")
-            completion(.failure(ProfileServiceError.invalidRequest))
+            let error = NetworkError.invalidRequest
+            error.log(object: self)
+            completion(.failure(error))
             return
         }
         
@@ -55,6 +52,7 @@ final class ProfileService {
                 self.profile = profile
                 completion(.success(profile))
             case .failure(let error):
+                error.log(object: self)
                 completion(.failure(error))
             }
             

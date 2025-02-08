@@ -7,10 +7,6 @@
 
 import Foundation
 
-enum ProfileImageServiceError: Error {
-    case invalidRequest
-}
-
 final class ProfileImageService {
     
     //MARK: - Public Properties
@@ -42,7 +38,9 @@ final class ProfileImageService {
         guard
             let request = makeProfileImageURLRequest(username)
         else {
-            completion(.failure(ProfileImageServiceError.invalidRequest))
+            let error = NetworkError.invalidRequest
+            error.log(object: self)
+            completion(.failure(error))
             return
         }
         
@@ -59,6 +57,7 @@ final class ProfileImageService {
                         name: ProfileImageService.didChangeNotification,
                         object: self)
             case .failure(let error):
+                error.log(object: self)
                 completion(.failure(error))
             }
             

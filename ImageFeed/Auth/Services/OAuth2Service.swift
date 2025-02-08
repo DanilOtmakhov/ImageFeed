@@ -7,10 +7,6 @@
 
 import Foundation
 
-enum AuthServiceError: Error {
-    case invalidRequest
-}
-
 final class OAuth2Service {
     
     //MARK: - Public Properties
@@ -37,12 +33,12 @@ final class OAuth2Service {
             if lastCode != code {
                 task?.cancel()
             } else {
-                completion(.failure(AuthServiceError.invalidRequest))
+                completion(.failure(NetworkError.invalidRequest))
                 return
             }
         } else {
             if lastCode == code {
-                completion(.failure(AuthServiceError.invalidRequest))
+                completion(.failure(NetworkError.invalidRequest))
                 return
             }
         }
@@ -51,7 +47,9 @@ final class OAuth2Service {
         guard
             let request = makeOAuthTokenRequest(code: code)
         else {
-            completion(.failure(AuthServiceError.invalidRequest))
+            let error = NetworkError.invalidRequest
+            error.log(object: self)
+            completion(.failure(error))
             return
         }
         
@@ -62,6 +60,7 @@ final class OAuth2Service {
             case .success(let responseBody):
                 completion(.success(responseBody.accessToken))
             case .failure(let error):
+                error.log(object: self)
                 completion(.failure(error))
             }
             

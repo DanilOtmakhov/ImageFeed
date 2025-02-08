@@ -12,6 +12,8 @@ enum NetworkError: Error {
     case httpStatusCode(Int)
     case urlRequestError(Error)
     case urlSessionError
+    case invalidRequest
+    case decodingError
     
     var localizedDescription: String {
         switch self {
@@ -21,6 +23,10 @@ enum NetworkError: Error {
             return "URL request failed with error: \(error.localizedDescription)"
         case .urlSessionError:
             return "URL session error occurred"
+        case .invalidRequest:
+            return "The request is invalid"
+        case .decodingError:
+            return "Failed to decode the response from server"
         }
     }
 }
@@ -59,14 +65,11 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
-                    print(NetworkError.httpStatusCode(statusCode).localizedDescription)
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }
             } else if let error = error {
-                print(NetworkError.urlRequestError(error).localizedDescription)
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
-                print(NetworkError.urlSessionError.localizedDescription)
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
             }
         }
