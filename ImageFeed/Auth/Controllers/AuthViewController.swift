@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol AuthViewControllerDelegate: AnyObject {
+    func didAuthenticate(_ vc: AuthViewController)
+}
+
 final class AuthViewController: UIViewController {
     
     //MARK: - Public Properties
@@ -18,6 +22,7 @@ final class AuthViewController: UIViewController {
     private let showWebViewSegueIdentifier = "ShowWebView"
     private let oAuth2Service = OAuth2Service.shared
     private lazy var oAuth2TokenStorage = OAuth2TokenStorage()
+    private lazy var alertPresenter: AlertPresenterProtocol = AlertPresenter(viewController: self)
 }
 
 extension AuthViewController {
@@ -51,17 +56,14 @@ extension AuthViewController: WebViewViewControllerDelegate {
             case .success(let token):
                 self.oAuth2TokenStorage.token = token
                 self.delegate?.didAuthenticate(self)
-            case .failure(let error):
-                print("Failed to fetch OAuth token: \(error.localizedDescription)")
-                let alertController = UIAlertController(
+            case .failure:
+                let alertModel = AlertModel(
                     title: "Что-то пошло не так(",
                     message: "Не удалось войти в систему",
-                    preferredStyle: .alert)
-                let alertAction = UIAlertAction(
-                    title: "Ок",
-                    style: .cancel)
-                alertController.addAction(alertAction)
-                self.present(alertController, animated: true)
+                    buttonText: "Ок",
+                    completion: nil
+                )
+                alertPresenter.show(alertModel: alertModel)
             }
         }
     }

@@ -18,6 +18,7 @@ final class SplashViewController: UIViewController {
     }(UIImageView())
     private lazy var oAuth2TokenStorage = OAuth2TokenStorage()
     private lazy var isAuthenticationCompleted = oAuth2TokenStorage.token != nil
+    private lazy var alertPresenter: AlertPresenterProtocol = AlertPresenter(viewController: self)
     
     //MARK: - Lifecycle
     
@@ -99,8 +100,13 @@ extension SplashViewController: AuthViewControllerDelegate {
                 ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { _ in }
                 self.switchToTabBarController()
             case .failure:
-                //TODO: Show error
-                break
+                let alertModel = AlertModel(
+                    title: "Что-то пошло не так(",
+                    message: "Не удалось войти в систему",
+                    buttonText: "Ок",
+                    completion: nil
+                )
+                alertPresenter.show(alertModel: alertModel)
             }
         }
     }
