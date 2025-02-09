@@ -29,26 +29,12 @@ final class SplashViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+        print(isAuthenticationCompleted)
         if isAuthenticationCompleted {
             guard let token = oAuth2TokenStorage.token else { return }
             fetchProfile(token)
         } else {
-            guard
-                let viewController = UIStoryboard(
-                    name: "Main",
-                    bundle: nil
-                ).instantiateViewController(
-                    withIdentifier: "AuthViewController"
-                )
-                    as? AuthViewController
-            else {
-                assertionFailure("AuthViewController not found")
-                return
-            }
-            viewController.delegate = self
-            viewController.modalPresentationStyle = .fullScreen
-            present(viewController, animated: true)
+            showAuthViewController()
         }
     }
     
@@ -62,6 +48,24 @@ final class SplashViewController: UIViewController {
             logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    private func showAuthViewController() {
+        guard
+            let viewController = UIStoryboard(
+                name: "Main",
+                bundle: nil
+            ).instantiateViewController(
+                withIdentifier: "AuthViewController"
+            )
+                as? AuthViewController
+        else {
+            assertionFailure("AuthViewController not found")
+            return
+        }
+        viewController.delegate = self
+        viewController.modalPresentationStyle = .fullScreen
+        present(viewController, animated: true)
     }
     
     private func switchToTabBarController() {
@@ -82,9 +86,7 @@ extension SplashViewController: AuthViewControllerDelegate {
     
     func didAuthenticate(_ vc: AuthViewController) {
         vc.dismiss(animated: true)
-        
-        guard let token = oAuth2TokenStorage.token else { return }
-        fetchProfile(token)
+        isAuthenticationCompleted = true
     }
     
     private func fetchProfile(_ token: String) {
@@ -103,9 +105,10 @@ extension SplashViewController: AuthViewControllerDelegate {
                 let alertModel = AlertModel(
                     title: "Что-то пошло не так(",
                     message: "Не удалось войти в систему",
-                    buttonText: "Ок",
-                    completion: nil
-                )
+                    buttonText: "Ок") { [weak self] in
+                        guard let self else { return }
+                        self.showAuthViewController()
+                    }
                 alertPresenter.show(alertModel: alertModel)
             }
         }
