@@ -12,27 +12,29 @@ final class ProfileViewController: UIViewController {
     
     //MARK: - Private Properties
     
-    private let profileImageView: UIImageView = {
+    private lazy var profileImageView: UIImageView = {
         $0.image = UIImage(named: "userpick_no_photo")
+        $0.contentMode = .scaleAspectFill
+        $0.clipsToBounds = true
         return $0
     }(UIImageView())
     
     private lazy var nameLabel: UILabel = {
-        $0.text = "Екатерина Новикова"
+        $0.text = "Danil Otmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         $0.textColor = .ypWhite
         return $0
     }(UILabel())
     
     private lazy var loginLabel: UILabel = {
-        $0.text = "@ekaterina_nov"
+        $0.text = "@danilotmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypGray
         return $0
     }(UILabel())
     
     private lazy var descriptionLabel: UILabel = {
-        $0.text = "Hello, world!"
+        $0.text = "Hello, world! (mock data)"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypWhite
         return $0
@@ -65,6 +67,11 @@ final class ProfileViewController: UIViewController {
                 self.updateProfileImage()
             }
         updateProfileImage()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
     }
     
     //MARK: - Private Methods
@@ -111,10 +118,9 @@ final class ProfileViewController: UIViewController {
             let url = URL(string: profileImageURL)
         else { return }
         
-        let processor = RoundCornerImageProcessor(cornerRadius: 35)
         profileImageView.kf.setImage(
             with: url,
-            options: [.processor(processor)]
+            placeholder: UIImage(named: "userpick_no_photo")
         )
     }
     
