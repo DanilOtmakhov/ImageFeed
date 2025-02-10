@@ -10,7 +10,7 @@ import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
-    //MARK: - Private Properties
+    // MARK: - Views
     
     private lazy var profileImageView: UIImageView = {
         $0.image = UIImage(named: "userpick_no_photo")
@@ -18,6 +18,8 @@ final class ProfileViewController: UIViewController {
         $0.clipsToBounds = true
         return $0
     }(UIImageView())
+    
+    // MARK: - Private Properties
     
     private lazy var nameLabel: UILabel = {
         $0.text = "Danil Otmakhov (mock data)"
@@ -46,9 +48,11 @@ final class ProfileViewController: UIViewController {
         return $0
     }(UIButton())
     
+    // MARK: - Private Properties
+    
     private var profileImageServiceObserver: NSObjectProtocol?
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,9 +78,17 @@ final class ProfileViewController: UIViewController {
         profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
     }
     
-    //MARK: - Private Methods
+    // MARK: - Actions
     
-    private func setupViewController() {
+    @objc private func didTapLogoutButton() {
+        OAuth2TokenStorage().token = nil
+    }
+}
+
+// MARK: - Setup
+
+private extension ProfileViewController {
+    func setupViewController() {
         view.backgroundColor = .ypBlack
         
         [profileImageView, nameLabel, loginLabel, descriptionLabel, logoutButton].forEach {
@@ -106,13 +118,13 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
-    private func updateProfileDetails(profile: Profile) {
+    func updateProfileDetails(profile: Profile) {
         nameLabel.text = profile.name
         loginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
     }
     
-    private func updateProfileImage() {
+    func updateProfileImage() {
         guard
             let profileImageURL = ProfileImageService.shared.profileImageURL,
             let url = URL(string: profileImageURL)
@@ -122,9 +134,5 @@ final class ProfileViewController: UIViewController {
             with: url,
             placeholder: UIImage(named: "userpick_no_photo")
         )
-    }
-    
-    @objc private func didTapLogoutButton() {
-        OAuth2TokenStorage().token = nil
     }
 }

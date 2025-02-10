@@ -9,11 +9,11 @@ import Foundation
 
 final class ProfileService {
     
-    //MARK: - Public Properties
+    // MARK: - Public Properties
     
     static let shared = ProfileService()
     
-    //MARK: - Private Properties
+    // MARK: - Private Properties
     
     private(set) var profile: Profile?
     private var task: URLSessionTask?
@@ -22,11 +22,11 @@ final class ProfileService {
         return $0
     }(JSONDecoder())
     
-    //MARK: - Initialization
+    // MARK: - Initialization
     
     private init() {}
     
-    //MARK: - Public Methods
+    // MARK: - Public Methods
     
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -62,7 +62,7 @@ final class ProfileService {
         task.resume()
     }
     
-    //MARK: - Private Methods
+    // MARK: - Private Methods
     
     private func makeProfileRequest(_ token: String) -> URLRequest? {
         return URLRequest.makeRequest(

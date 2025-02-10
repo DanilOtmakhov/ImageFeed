@@ -9,12 +9,12 @@ import Foundation
 
 final class ProfileImageService {
     
-    //MARK: - Public Properties
+    // MARK: - Public Properties
     
     static let shared = ProfileImageService()
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
     
-    //MARK: - Private Properties
+    // MARK: - Private Properties
     
     private(set) var profileImageURL: String?
     private var task: URLSessionTask?
@@ -23,11 +23,11 @@ final class ProfileImageService {
         return $0
     }(JSONDecoder())
     
-    //MARK: - Initialization
+    // MARK: - Initialization
     
     private init() {}
     
-    //MARK: - Public Methods
+    // MARK: - Public Methods
     
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -67,7 +67,7 @@ final class ProfileImageService {
         task.resume()
     }
     
-    //MARK: - Private Methods
+    // MARK: - Private Methods
     
     private func makeProfileImageURLRequest(_ username: String) -> URLRequest? {
         guard let token = OAuth2TokenStorage().token else {

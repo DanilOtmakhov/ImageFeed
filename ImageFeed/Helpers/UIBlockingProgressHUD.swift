@@ -10,13 +10,13 @@ import ProgressHUD
 
 final class UIBlockingProgressHUD {
     
-    //MARK: - Private Properties
+    // MARK: - Private Properties
     
     private static var window: UIWindow? {
         return UIApplication.shared.windows.first
     }
     
-    //MARK: - Public Methods
+    // MARK: - Public Methods
     
     static func show() {
         window?.isUserInteractionEnabled = false

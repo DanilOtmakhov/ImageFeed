@@ -9,11 +9,11 @@ import Foundation
 
 final class OAuth2Service {
     
-    //MARK: - Public Properties
+    // MARK: - Public Properties
     
     static let shared = OAuth2Service()
     
-    //MARK: - Private Properties
+    // MARK: - Private Properties
     private var lastCode: String?
     private var task: URLSessionTask?
     private let decoder: JSONDecoder = {
@@ -21,11 +21,11 @@ final class OAuth2Service {
         return $0
     }(JSONDecoder())
     
-    //MARK: - Initialization
+    // MARK: - Initialization
     
     private init() {}
     
-    //MARK: - Public Methods
+    // MARK: - Public Methods
         
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -71,7 +71,7 @@ final class OAuth2Service {
         task.resume()
     }
     
-    //MARK: - Private Methods
+    // MARK: - Private Methods
         
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         return URLRequest.makeRequest(

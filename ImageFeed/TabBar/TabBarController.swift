@@ -10,10 +10,12 @@ import UIKit
 final class TabBarController: UITabBarController {
     override func awakeFromNib() {
         super.awakeFromNib()
-        let storyboard = UIStoryboard(name: "Main", bundle: .main)
             
-        let imagesListViewController = storyboard.instantiateViewController(
-            withIdentifier: "ImagesListViewController"
+        let imagesListViewController = ImagesListViewController()
+        imagesListViewController.tabBarItem = UITabBarItem(
+            title: nil,
+            image: UIImage(named: "tab_main_active"),
+            selectedImage: nil
         )
             
         let profileViewController = ProfileViewController()

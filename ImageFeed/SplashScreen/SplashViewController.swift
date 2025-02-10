@@ -9,18 +9,21 @@ import UIKit
 
 final class SplashViewController: UIViewController {
     
-    //MARK: - Private Properties
+    // MARK: - Views
     
-    private let logoImageView: UIImageView = {
+    private lazy var logoImageView: UIImageView = {
         $0.image = UIImage(named: "splash_screen_logo")
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UIImageView())
+    
+    // MARK: - Private Properties
+    
     private lazy var oAuth2TokenStorage = OAuth2TokenStorage()
     private lazy var isAuthenticationCompleted = oAuth2TokenStorage.token != nil
     private lazy var alertPresenter: AlertPresenterProtocol = AlertPresenter(viewController: self)
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,7 +32,6 @@ final class SplashViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        print(isAuthenticationCompleted)
         if isAuthenticationCompleted {
             guard let token = oAuth2TokenStorage.token else { return }
             fetchProfile(token)
@@ -38,34 +40,13 @@ final class SplashViewController: UIViewController {
         }
     }
     
-    //MARK: - Private Methods
-    
-    private func setupViewController() {
-        view.backgroundColor = .ypBlack
-        view.addSubview(logoImageView)
-        
-        NSLayoutConstraint.activate([
-            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
-    }
+    // MARK: - Private Methods
     
     private func showAuthViewController() {
-        guard
-            let viewController = UIStoryboard(
-                name: "Main",
-                bundle: nil
-            ).instantiateViewController(
-                withIdentifier: "AuthViewController"
-            )
-                as? AuthViewController
-        else {
-            assertionFailure("AuthViewController not found")
-            return
-        }
-        viewController.delegate = self
-        viewController.modalPresentationStyle = .fullScreen
-        present(viewController, animated: true)
+        let authViewController = AuthViewController()
+        authViewController.delegate = self
+        authViewController.modalPresentationStyle = .fullScreen
+        present(authViewController, animated: true)
     }
     
     private func switchToTabBarController() {
@@ -80,7 +61,21 @@ final class SplashViewController: UIViewController {
     }
 }
 
-//MARK: - AuthViewControllerDelegate
+// MARK: - Setup
+
+extension SplashViewController {
+    private func setupViewController() {
+        view.backgroundColor = .ypBlack
+        view.addSubview(logoImageView)
+        
+        NSLayoutConstraint.activate([
+            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            logoImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+}
+
+// MARK: - AuthViewControllerDelegate
 
 extension SplashViewController: AuthViewControllerDelegate {
     
