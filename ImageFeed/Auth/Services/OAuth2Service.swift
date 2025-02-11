@@ -29,19 +29,11 @@ final class OAuth2Service {
         
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
-        if task != nil {
-            if lastCode != code {
-                task?.cancel()
-            } else {
-                completion(.failure(NetworkError.invalidRequest))
-                return
-            }
-        } else {
-            if lastCode == code {
-                completion(.failure(NetworkError.invalidRequest))
-                return
-            }
+        if lastCode == code {
+            completion(.failure(NetworkError.invalidRequest))
+            return
         }
+        task?.cancel()
         lastCode = code
         
         guard
