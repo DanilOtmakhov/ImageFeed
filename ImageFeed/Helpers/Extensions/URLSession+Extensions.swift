@@ -1,5 +1,5 @@
 //
-//  URLSession+data.swift
+//  URLSession+Extensions.swift
 //  ImageFeed
 //
 //  Created by Danil Otmakhov on 21.01.2025.
@@ -12,6 +12,8 @@ enum NetworkError: Error {
     case httpStatusCode(Int)
     case urlRequestError(Error)
     case urlSessionError
+    case invalidRequest
+    case decodingError
     
     var localizedDescription: String {
         switch self {
@@ -21,11 +23,36 @@ enum NetworkError: Error {
             return "URL request failed with error: \(error.localizedDescription)"
         case .urlSessionError:
             return "URL session error occurred"
+        case .invalidRequest:
+            return "The request is invalid"
+        case .decodingError:
+            return "Failed to decode the response from server"
         }
     }
 }
 
 extension URLSession {
+    func objectTask<T: Decodable>(for request: URLRequest, completion: @escaping (Result<T, Error>) -> Void) -> URLSessionTask {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
+        let task = data(for: request) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let decodedData = try decoder.decode(T.self, from: data)
+                    completion(.success(decodedData))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+        
+        return task
+    }
+    
     func data(for request: URLRequest, completion: @escaping (Result<Data, Error>) -> Void) -> URLSessionTask {
         let fulfillCompletionOnTheMainThread: (Result<Data, Error>) -> Void = { result in
             DispatchQueue.main.async {
@@ -38,14 +65,11 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
-                    print(NetworkError.httpStatusCode(statusCode).localizedDescription)
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }
             } else if let error = error {
-                print(NetworkError.urlRequestError(error).localizedDescription)
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
-                print(NetworkError.urlSessionError.localizedDescription)
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
             }
         }

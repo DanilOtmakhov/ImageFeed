@@ -6,52 +6,89 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
-    //MARK: - Private Properties
+    // MARK: - Views
     
-    private let profileImageView: UIImageView = {
-        $0.image = UIImage(named: "userpick")
+    private lazy var profileImageView: UIImageView = {
+        $0.image = UIImage(named: "userpick_no_photo")
+        $0.contentMode = .scaleAspectFill
+        $0.clipsToBounds = true
         return $0
     }(UIImageView())
     
-    private let nameLabel: UILabel = {
-        $0.text = "Екатерина Новикова"
+    // MARK: - Private Properties
+    
+    private lazy var nameLabel: UILabel = {
+        $0.text = "Danil Otmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         $0.textColor = .ypWhite
         return $0
     }(UILabel())
     
-    private let loginLabel: UILabel = {
-        $0.text = "@ekaterina_nov"
+    private lazy var loginLabel: UILabel = {
+        $0.text = "@danilotmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypGray
         return $0
     }(UILabel())
     
-    private let descriptionLabel: UILabel = {
-        $0.text = "Hello, world!"
+    private lazy var descriptionLabel: UILabel = {
+        $0.text = "Hello, world! (mock data)"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypWhite
         return $0
     }(UILabel())
     
-    private let logoutButton: UIButton = {
+    private lazy var logoutButton: UIButton = {
         $0.setImage(UIImage(named: "logout"), for: .normal)
+        $0.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         return $0
     }(UIButton())
     
-    //MARK: - Lifecycle
+    // MARK: - Private Properties
+    
+    private var profileImageServiceObserver: NSObjectProtocol?
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
+        
+        guard let profile = ProfileService.shared.profile else { return }
+        updateProfileDetails(profile: profile)
+        
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                self.updateProfileImage()
+            }
+        updateProfileImage()
     }
     
-    //MARK: - Private Methods
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
+    }
     
-    private func setupViewController() {
+    // MARK: - Actions
+    
+    @objc private func didTapLogoutButton() {
+        OAuth2TokenStorage().token = nil
+    }
+}
+
+// MARK: - Setup
+
+private extension ProfileViewController {
+    func setupViewController() {
         view.backgroundColor = .ypBlack
         
         [profileImageView, nameLabel, loginLabel, descriptionLabel, logoutButton].forEach {
@@ -79,5 +116,23 @@ final class ProfileViewController: UIViewController {
             logoutButton.widthAnchor.constraint(equalToConstant: 48),
             logoutButton.heightAnchor.constraint(equalToConstant: 48)
         ])
+    }
+    
+    func updateProfileDetails(profile: Profile) {
+        nameLabel.text = profile.name
+        loginLabel.text = profile.loginName
+        descriptionLabel.text = profile.bio
+    }
+    
+    func updateProfileImage() {
+        guard
+            let profileImageURL = ProfileImageService.shared.profileImageURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        
+        profileImageView.kf.setImage(
+            with: url,
+            placeholder: UIImage(named: "userpick_no_photo")
+        )
     }
 }
