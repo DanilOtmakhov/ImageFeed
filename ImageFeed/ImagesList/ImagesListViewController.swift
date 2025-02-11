@@ -31,7 +31,6 @@ final class ImagesListViewController: UIViewController {
         return formatter
     }()
     private let currentDate = Date()
-    private let showSingleImageSegueIdentifier = "ShowSingleImage"
     
     // MARK: - Lifecycle
     
@@ -91,24 +90,10 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-//        let singleImageViewController = SingleImageViewController()
-//        singleImageViewController.image = UIImage(named: photosNames[indexPath.row])
-//        present(singleImageViewController, animated: true)
-        guard
-            let viewController = UIStoryboard(
-                name: "Main",
-                bundle: nil
-            ).instantiateViewController(
-                withIdentifier: "SingleImageViewController"
-            )
-                as? SingleImageViewController
-        else {
-            assertionFailure("not found")
-            return
-        }
-        viewController.image = UIImage(named: photosNames[indexPath.row])
-        present(viewController, animated: true)
-        
+        let singleImageViewController = SingleImageViewController()
+        singleImageViewController.image = UIImage(named: photosNames[indexPath.row])
+        singleImageViewController.modalPresentationStyle = .fullScreen
+        present(singleImageViewController, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
