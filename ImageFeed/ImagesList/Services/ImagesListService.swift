@@ -11,7 +11,7 @@ final class ImagesListService {
     
     // MARK: - Public Properties
     
-    static let shared = ImagesListCell()
+    static let shared = ImagesListService()
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
     // MARK: - Private Properties
@@ -19,10 +19,6 @@ final class ImagesListService {
     private(set) var photos: [Photo] = []
     private var lastLoadedPage: Int?
     private var task: URLSessionTask?
-    private let decoder: JSONDecoder = {
-        $0.keyDecodingStrategy = .convertFromSnakeCase
-        return $0
-    }(JSONDecoder())
     
     // MARK: - Initialization
     
