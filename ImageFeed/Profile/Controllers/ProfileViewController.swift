@@ -57,19 +57,10 @@ final class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
+        setupNotificationObserver()
         
         guard let profile = ProfileService.shared.profile else { return }
         updateProfileDetails(profile: profile)
-        
-        profileImageServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self else { return }
-                self.updateProfileImage()
-            }
         updateProfileImage()
     }
     
@@ -116,6 +107,18 @@ private extension ProfileViewController {
             logoutButton.widthAnchor.constraint(equalToConstant: 48),
             logoutButton.heightAnchor.constraint(equalToConstant: 48)
         ])
+    }
+    
+    private func setupNotificationObserver() {
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                self.updateProfileImage()
+            }
     }
     
     func updateProfileDetails(profile: Profile) {

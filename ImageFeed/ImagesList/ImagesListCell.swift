@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class ImagesListCell: UITableViewCell {
     
@@ -100,5 +101,41 @@ extension ImagesListCell {
             startPoint: CGPoint(x: 0.5, y: 0.0),
             endPoint: CGPoint(x: 0.5, y: 1.0)
         )
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImageView.kf.cancelDownloadTask()
+    }
+    
+    func configure(with photo: Photo, reloadRowClosure: @escaping () -> Void) {
+        let placeholder = generatePlaceholderImage(bounds.size)
+        guard let url = URL(string: photo.thumbImageURL) else { return }
+        
+        self.cellImageView.kf.indicatorType = .activity
+        self.cellImageView.kf.setImage(
+            with: url,
+            placeholder: placeholder) { _ in
+                reloadRowClosure()
+            }
+        self.dateLabel.text = photo.createdAt?.dateString
+        self.likeButton.setImage(photo.isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
+    }
+    
+    private func generatePlaceholderImage(_ size: CGSize) -> UIImage {
+        let icon = UIImage(named: "placeholder")
+        let backgroundColor: UIColor = .ypWhiteAlpha50
+        
+        return UIGraphicsImageRenderer(size: size).image { context in
+            backgroundColor.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+            
+            guard let icon else { return }
+            let iconSize = CGSize(width: size.width * 0.5,
+                                  height: size.height * 0.5)
+            let iconOrigin = CGPoint(x: (size.width - iconSize.width) / 2,
+                                     y: (size.height - iconSize.height) / 2)
+            icon.draw(in: CGRect(origin: iconOrigin, size: iconSize))
+        }
     }
 }
