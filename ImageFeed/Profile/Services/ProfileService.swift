@@ -17,10 +17,6 @@ final class ProfileService {
     
     private(set) var profile: Profile?
     private var task: URLSessionTask?
-    private let decoder: JSONDecoder = {
-        $0.keyDecodingStrategy = .convertFromSnakeCase
-        return $0
-    }(JSONDecoder())
     
     // MARK: - Initialization
     
@@ -65,7 +61,7 @@ final class ProfileService {
     // MARK: - Private Methods
     
     private func makeProfileRequest(_ token: String) -> URLRequest? {
-        return URLRequest.makeRequest(
+        URLRequest.makeRequest(
             host: "api.unsplash.com",
             path: "/me",
             headers: ["Authorization": "Bearer \(token)"]

@@ -1,23 +1,28 @@
 //
-//  ProfileImageService.swift
+//  ImagesListService.swift
 //  ImageFeed
 //
-//  Created by Danil Otmakhov on 03.02.2025.
+//  Created by Danil Otmakhov on 20.02.2025.
 //
 
 import Foundation
 
-final class ProfileImageService {
+final class ImagesListService {
     
     // MARK: - Public Properties
     
-    static let shared = ProfileImageService()
-    static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
+    static let shared = ImagesListCell()
+    static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
     // MARK: - Private Properties
     
-    private(set) var profileImageURL: String?
+    private(set) var photos: [Photo] = []
+    private var lastLoadedPage: Int?
     private var task: URLSessionTask?
+    private let decoder: JSONDecoder = {
+        $0.keyDecodingStrategy = .convertFromSnakeCase
+        return $0
+    }(JSONDecoder())
     
     // MARK: - Initialization
     
@@ -25,37 +30,37 @@ final class ProfileImageService {
     
     // MARK: - Public Methods
     
-    func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
+    func fetchPhotosNextPage() {
         assert(Thread.isMainThread)
         if task != nil {
             task?.cancel()
         }
         
+        let nextPage = (lastLoadedPage ?? 0) + 1
+            
         guard
-            let request = makeProfileImageURLRequest(username)
+            let request = makePhotosNextPageURLRequest(nextPage)
         else {
             let error = NetworkError.invalidRequest
             error.log(object: self)
-            completion(.failure(error))
             return
         }
         
-        let task = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<UserResult, Error>) in
+        let task = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<[PhotoResult], any Error>) in
             guard let self else { return }
             
             switch result {
-            case .success(let userResult):
-                let profileImageURL = userResult.profileImage.small
-                self.profileImageURL = profileImageURL
-                completion(.success(profileImageURL))
+            case .success(let photoResult):
+                let photos = photoResult.map { Photo(from: $0) }
+                self.photos.append(contentsOf: photos)
+                self.lastLoadedPage = nextPage
                 NotificationCenter.default
                     .post(
-                        name: ProfileImageService.didChangeNotification,
+                        name: ImagesListService.didChangeNotification,
                         object: self
                     )
             case .failure(let error):
                 error.log(object: self)
-                completion(.failure(error))
             }
             
             self.task = nil
@@ -66,15 +71,16 @@ final class ProfileImageService {
     
     // MARK: - Private Methods
     
-    private func makeProfileImageURLRequest(_ username: String) -> URLRequest? {
+    private func makePhotosNextPageURLRequest(_ page: Int) -> URLRequest? {
         guard let token = OAuth2TokenStorage().token else {
             assertionFailure("Missing auth token")
             return nil
         }
-
+        
         return URLRequest.makeRequest(
             host: "api.unsplash.com",
-            path: "/users/\(username)",
+            path: "/photos",
+            queryItems: [URLQueryItem(name: "page", value: String(page))],
             headers: ["Authorization": "Bearer \(token)"]
         )
     }

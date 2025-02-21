@@ -16,10 +16,6 @@ final class OAuth2Service {
     // MARK: - Private Properties
     private var lastCode: String?
     private var task: URLSessionTask?
-    private let decoder: JSONDecoder = {
-        $0.keyDecodingStrategy = .convertFromSnakeCase
-        return $0
-    }(JSONDecoder())
     
     // MARK: - Initialization
     
@@ -66,7 +62,7 @@ final class OAuth2Service {
     // MARK: - Private Methods
         
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
-        return URLRequest.makeRequest(
+        URLRequest.makeRequest(
             host: "unsplash.com",
             path: "/oauth/token",
             method: "POST",
