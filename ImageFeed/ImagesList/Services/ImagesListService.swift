@@ -102,6 +102,10 @@ final class ImagesListService {
         task.resume()
     }
     
+    func resetPhotos() {
+        photos = []
+    }
+    
     // MARK: - Private Methods
     
     private func makePhotosNextPageURLRequest(_ page: Int) -> URLRequest? {

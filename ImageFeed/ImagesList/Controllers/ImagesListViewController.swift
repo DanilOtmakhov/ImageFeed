@@ -113,13 +113,13 @@ extension ImagesListViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 
 extension ImagesListViewController: UITableViewDelegate {
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        
-//        let singleImageViewController = SingleImageViewController()
-//        singleImageViewController.image = UIImage(named: photos[indexPath.row])
-//        singleImageViewController.modalPresentationStyle = .fullScreen
-//        present(singleImageViewController, animated: true)
-//    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let singleImageViewController = SingleImageViewController()
+        singleImageViewController.configure(with: photos[indexPath.row])
+        singleImageViewController.modalPresentationStyle = .fullScreen
+        present(singleImageViewController, animated: true)
+    }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         let photo = photos[indexPath.row]
@@ -148,16 +148,16 @@ extension ImagesListViewController: ImagesListCellDelegate {
         UIBlockingProgressHUD.show()
         
         ImagesListService.shared.changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
-            guard let self else { return }
+            UIBlockingProgressHUD.dismiss()
             
+            guard let self else { return }
             switch result {
             case .success:
                 self.photos = ImagesListService.shared.photos
                 cell.setIsLiked(self.photos[indexPath.row].isLiked)
-                UIBlockingProgressHUD.dismiss()
             case .failure:
-                UIBlockingProgressHUD.dismiss()
                 // TODO: show alert with error
+                break
             }
         }
     }

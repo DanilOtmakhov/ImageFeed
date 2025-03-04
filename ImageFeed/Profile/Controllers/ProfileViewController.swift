@@ -51,6 +51,7 @@ final class ProfileViewController: UIViewController {
     // MARK: - Private Properties
     
     private var profileImageServiceObserver: NSObjectProtocol?
+    private lazy var alertPresenter = AlertPresenter(viewController: self)
     
     // MARK: - Lifecycle
     
@@ -72,7 +73,19 @@ final class ProfileViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func didTapLogoutButton() {
-        OAuth2TokenStorage().token = nil
+        let alertModel = AlertModel(
+            title: "Пока, пока!",
+            message: "Уверены что хотите выйти?",
+            buttons: [
+                (title: "Да", handler: { [weak self] in
+                    guard let self else { return }
+                    ProfileLogoutService.shared.logout()
+                    self.switchToSplashViewController()
+                }),
+                (title: "Нет", handler: nil)
+            ]
+        )
+        alertPresenter.show(alertModel: alertModel)
     }
 }
 
@@ -109,7 +122,7 @@ private extension ProfileViewController {
         ])
     }
     
-    private func setupNotificationObserver() {
+    func setupNotificationObserver() {
         profileImageServiceObserver = NotificationCenter.default
             .addObserver(
                 forName: ProfileImageService.didChangeNotification,
@@ -120,6 +133,12 @@ private extension ProfileViewController {
                 self.updateProfileImage()
             }
     }
+    
+}
+
+// MARK: - Internal Methods
+
+extension ProfileViewController {
     
     func updateProfileDetails(profile: Profile) {
         nameLabel.text = profile.name
@@ -138,4 +157,21 @@ private extension ProfileViewController {
             placeholder: UIImage(named: "userpick_no_photo")
         )
     }
+    
+}
+
+// MARK: - Private Methods
+
+private extension ProfileViewController {
+    
+    func switchToSplashViewController() {
+        let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        guard let window = windowScene?.windows.first else {
+            assertionFailure("Invalid window configuration")
+            return
+        }
+        
+        window.rootViewController = SplashViewController()
+    }
+    
 }

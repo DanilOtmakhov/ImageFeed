@@ -64,6 +64,10 @@ final class ProfileImageService {
         task.resume()
     }
     
+    func resetImageURL() {
+        profileImageURL = nil
+    }
+    
     // MARK: - Private Methods
     
     private func makeProfileImageURLRequest(_ username: String) -> URLRequest? {
