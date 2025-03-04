@@ -16,6 +16,16 @@ struct Photo {
     let largeImageURL: String
     let isLiked: Bool
     
+    init(id: String, size: CGSize, createdAt: Date?, welcomeDescription: String?, thumbImageURL: String, largeImageURL: String, isLiked: Bool) {
+        self.id = id
+        self.size = size
+        self.createdAt = createdAt
+        self.welcomeDescription = welcomeDescription
+        self.thumbImageURL = thumbImageURL
+        self.largeImageURL = largeImageURL
+        self.isLiked = isLiked
+    }
+    
     init(from photoResult: PhotoResult) {
         self.id = photoResult.id
         self.size = CGSize(width: photoResult.width, height: photoResult.height)

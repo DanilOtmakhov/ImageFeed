@@ -8,6 +8,10 @@
 import UIKit
 import Kingfisher
 
+protocol ImagesListCellDelegate: AnyObject {
+    func imageListCellDidTapLike(_ cell: ImagesListCell)
+}
+
 final class ImagesListCell: UITableViewCell {
     
     // MARK: - Views
@@ -29,6 +33,7 @@ final class ImagesListCell: UITableViewCell {
     
     lazy var likeButton: UIButton = {
         $0.setImage(UIImage(named: "like_on"), for: .normal)
+        $0.addTarget(self, action: #selector(didTapLikeButton), for: .touchUpInside)
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UIButton())
@@ -41,6 +46,7 @@ final class ImagesListCell: UITableViewCell {
     // MARK: - Public Properties
     
     static let reuseIdentifier = "ImagesListCell"
+    weak var delegate: ImagesListCellDelegate?
     
     // MARK: - Initialization
     
@@ -51,6 +57,12 @@ final class ImagesListCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - Actions
+    
+    @objc private func didTapLikeButton() {
+        delegate?.imageListCellDidTapLike(self)
     }
 }
 
@@ -137,5 +149,9 @@ extension ImagesListCell {
                                      y: (size.height - iconSize.height) / 2)
             icon.draw(in: CGRect(origin: iconOrigin, size: iconSize))
         }
+    }
+    
+    func setIsLiked(_ isLiked: Bool) {
+        self.likeButton.setImage(isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
     }
 }
