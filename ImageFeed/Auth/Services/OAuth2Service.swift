@@ -9,7 +9,7 @@ import Foundation
 
 final class OAuth2Service {
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     static let shared = OAuth2Service()
     
@@ -21,7 +21,7 @@ final class OAuth2Service {
     
     private init() {}
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
         
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)

@@ -9,7 +9,7 @@ import Foundation
 
 final class ImagesListService {
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     static let shared = ImagesListService()
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
@@ -24,7 +24,7 @@ final class ImagesListService {
     
     private init() {}
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
     func fetchPhotosNextPage() {
         assert(Thread.isMainThread)

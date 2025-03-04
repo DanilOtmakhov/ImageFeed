@@ -9,7 +9,7 @@ import Foundation
 
 final class ProfileImageService {
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     static let shared = ProfileImageService()
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
@@ -23,7 +23,7 @@ final class ProfileImageService {
     
     private init() {}
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)

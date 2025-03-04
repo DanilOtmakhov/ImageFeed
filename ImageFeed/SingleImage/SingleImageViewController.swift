@@ -43,7 +43,7 @@ final class SingleImageViewController: UIViewController {
         return $0
     }(UIButton())
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     var image: UIImage? {
         didSet {

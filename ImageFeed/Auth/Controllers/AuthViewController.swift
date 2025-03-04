@@ -31,7 +31,7 @@ final class AuthViewController: UIViewController {
         return $0
     }(UIButton())
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     weak var delegate: AuthViewControllerDelegate?
     

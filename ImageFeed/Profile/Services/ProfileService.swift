@@ -9,7 +9,7 @@ import Foundation
 
 final class ProfileService {
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     static let shared = ProfileService()
     
@@ -22,7 +22,7 @@ final class ProfileService {
     
     private init() {}
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         assert(Thread.isMainThread)
