@@ -12,6 +12,13 @@ final class SingleImageViewController: UIViewController {
     
     // MARK: - Views
     
+    private lazy var placeholderImageView: UIImageView = {
+        $0.image = UIImage(named: "placeholder")
+        $0.contentMode = .scaleAspectFit
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        return $0
+    }(UIImageView())
+    
     private lazy var imageView: UIImageView = {
         $0.image = UIImage(named: "0")
         $0.contentMode = .scaleAspectFit
@@ -78,13 +85,16 @@ extension SingleImageViewController {
     private func setupViewController() {
         view.backgroundColor = .ypBlack
         
-        [scrollView, backButton, shareButton].forEach {
+        [placeholderImageView, scrollView, backButton, shareButton].forEach {
             view.addSubview($0)
         }
         
         scrollView.addSubview(imageView)
         
         NSLayoutConstraint.activate([
+            placeholderImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            placeholderImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -117,6 +127,7 @@ extension SingleImageViewController {
             guard let self else { return }
             switch result {
             case .success(let imageResult):
+                self.placeholderImageView.isHidden = true
                 self.rescaleAndCenterImageInScrollView(image: imageResult.image)
             case .failure:
                 self.showError()
