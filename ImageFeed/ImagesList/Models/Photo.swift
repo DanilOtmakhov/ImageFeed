@@ -26,10 +26,14 @@ struct Photo {
         self.isLiked = isLiked
     }
     
-    init(from photoResult: PhotoResult) {
+    init(from photoResult: PhotoResult) throws {
         self.id = photoResult.id
         self.size = CGSize(width: photoResult.width, height: photoResult.height)
-        self.createdAt = Date.from(photoResult.createdAt)
+        do {
+            self.createdAt = try Date.from(photoResult.createdAt)
+        } catch {
+            throw error
+        }
         self.welcomeDescription = photoResult.description
         self.thumbImageURL = photoResult.urls.thumb
         self.largeImageURL = photoResult.urls.full

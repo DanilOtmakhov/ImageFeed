@@ -26,6 +26,8 @@ final class ImagesListViewController: UIViewController {
     
     private var photos: [Photo] = []
     private var imagesListServiceObserver: NSObjectProtocol?
+    private var imagesListServiceErrorObserver: NSObjectProtocol?
+    private lazy var alertPresenter = AlertPresenter(viewController: self)
     
     // MARK: - Lifecycle
     
@@ -60,6 +62,15 @@ final class ImagesListViewController: UIViewController {
             tableView.insertRows(at: indexPaths, with: .automatic)
         }
     }
+    
+    private func showSomethingWentWrongError(_ handler: (() -> Void)?) {
+        let alertModel = AlertModel(
+            title: "Что-то пошло не так(",
+            message: nil,
+            buttons: [(title: "Ок", handler: handler)]
+        )
+        alertPresenter.show(alertModel: alertModel)
+    }
 }
 
 // MARK: - Setup
@@ -86,6 +97,19 @@ private extension ImagesListViewController {
                 using: { [weak self] _ in
                     guard let self else { return }
                     self.updateTableViewAnimated()
+                }
+            )
+        
+        imagesListServiceErrorObserver = NotificationCenter.default
+            .addObserver(
+                forName: ImagesListService.didFailNotification,
+                object: nil,
+                queue: .main,
+                using: { [weak self] _ in
+                    guard let self else { return }
+                    self.showSomethingWentWrongError {
+                        ImagesListService.shared.fetchPhotosNextPage()
+                    }
                 }
             )
     }
@@ -156,8 +180,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
                 self.photos = ImagesListService.shared.photos
                 cell.setIsLiked(self.photos[indexPath.row].isLiked)
             case .failure:
-                // TODO: show alert with error
-                break
+                self.showSomethingWentWrongError(nil)
             }
         }
     }

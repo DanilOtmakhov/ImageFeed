@@ -9,6 +9,6 @@ import UIKit
 
 struct AlertModel {
     let title: String
-    let message: String
+    let message: String?
     let buttons: [(title: String, handler: (() -> Void)?)]
 }

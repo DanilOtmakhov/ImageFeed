@@ -8,13 +8,12 @@
 import Foundation
 
 extension Date {
-    private static let isoDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssXXX"
-        formatter.timeZone = TimeZone.current
-        formatter.locale = Locale(identifier: "ru_RU")
-        return formatter
-    }()
+    
+    enum DateConversionError: Error {
+        case invalidFormat
+    }
+    
+    private static let isoDateFormatter = ISO8601DateFormatter()
 
     private static let displayDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -23,12 +22,16 @@ extension Date {
         return formatter
     }()
 
-    static func from(_ string: String) -> Date? {
-        return isoDateFormatter.date(from: string)
+    static func from(_ string: String) throws -> Date {
+        guard let date = isoDateFormatter.date(from: string) else {
+            throw DateConversionError.invalidFormat
+        }
+        return date
     }
     
     var dateString: String {
         return Date.displayDateFormatter.string(from: self)
     }
+    
 }
 

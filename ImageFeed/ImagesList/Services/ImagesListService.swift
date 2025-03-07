@@ -13,6 +13,7 @@ final class ImagesListService {
     
     static let shared = ImagesListService()
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
+    static let didFailNotification = Notification.Name(rawValue: "ImageListServiceDidFail")
     
     // MARK: - Private Properties
     
@@ -47,16 +48,20 @@ final class ImagesListService {
             
             switch result {
             case .success(let photoResult):
-                let photos = photoResult.map { Photo(from: $0) }
-                self.photos.append(contentsOf: photos)
-                self.lastLoadedPage = nextPage
-                NotificationCenter.default
-                    .post(
-                        name: ImagesListService.didChangeNotification,
-                        object: self
-                    )
+                do {
+                    let photos = try photoResult.map { try Photo(from: $0) }
+                    self.photos.append(contentsOf: photos)
+                    self.lastLoadedPage = nextPage
+                    NotificationCenter.default
+                        .post(
+                            name: ImagesListService.didChangeNotification,
+                            object: self
+                        )
+                } catch {
+                    self.notifyPhotoLoadingError(error)
+                }
             case .failure(let error):
-                error.log(object: self)
+                self.notifyPhotoLoadingError(error)
             }
             
             self.task = nil
@@ -133,6 +138,15 @@ final class ImagesListService {
             path: "/photos/\(photoId)/like",
             method: method,
             headers: ["Authorization": "Bearer \(token)"]
+        )
+    }
+    
+    private func notifyPhotoLoadingError(_ error: Error) {
+        error.log(object: self)
+        NotificationCenter.default.post(
+            name: ImagesListService.didFailNotification,
+            object: self,
+            userInfo: ["error": error]
         )
     }
 }
