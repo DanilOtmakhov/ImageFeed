@@ -29,9 +29,7 @@ final class ImagesListService {
     
     func fetchPhotosNextPage() {
         assert(Thread.isMainThread)
-        if task != nil {
-            task?.cancel()
-        }
+        guard task == nil else { return }
         
         let nextPage = (lastLoadedPage ?? 0) + 1
             
@@ -50,7 +48,10 @@ final class ImagesListService {
             case .success(let photoResult):
                 do {
                     let photos = try photoResult.map { try Photo(from: $0) }
-                    self.photos.append(contentsOf: photos)
+                    let newPhotos = photos.filter { photo in
+                        !self.photos.contains(where: { $0.id == photo.id })
+                    }
+                    self.photos.append(contentsOf: newPhotos)
                     self.lastLoadedPage = nextPage
                     NotificationCenter.default
                         .post(

@@ -106,13 +106,15 @@ extension ImagesListCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        let colors: [UIColor] = [.clear, .ypGradient]
-        gradientView.addGradient(
-            for: gradientView,
-            colors: colors,
-            startPoint: CGPoint(x: 0.5, y: 0.0),
-            endPoint: CGPoint(x: 0.5, y: 1.0)
-        )
+        if gradientView.layer.sublayers == nil {
+            let colors: [UIColor] = [.clear, .ypGradient]
+            gradientView.addGradient(
+                for: gradientView,
+                colors: colors,
+                startPoint: CGPoint(x: 0.5, y: 0.0),
+                endPoint: CGPoint(x: 0.5, y: 1.0)
+            )
+        }
     }
     
     override func prepareForReuse() {
@@ -120,7 +122,7 @@ extension ImagesListCell {
         cellImageView.kf.cancelDownloadTask()
     }
     
-    func configure(with photo: Photo, reloadRowClosure: @escaping () -> Void) {
+    func configure(with photo: Photo, completion: @escaping () -> Void) {
         let placeholder = generatePlaceholderImage(bounds.size)
         guard let url = URL(string: photo.thumbImageURL) else { return }
         
@@ -128,7 +130,7 @@ extension ImagesListCell {
         self.cellImageView.kf.setImage(
             with: url,
             placeholder: placeholder) { _ in
-                reloadRowClosure()
+                completion()
             }
         self.dateLabel.text = photo.createdAt?.dateString
         self.likeButton.setImage(photo.isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
