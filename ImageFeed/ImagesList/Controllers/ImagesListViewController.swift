@@ -122,7 +122,8 @@ extension ImagesListViewController: UITableViewDataSource {
         photos.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {guard let imageListCell = tableView.dequeueReusableCell(
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let imageListCell = tableView.dequeueReusableCell(
             withIdentifier: ImagesListCell.reuseIdentifier,
             for: indexPath
         ) as? ImagesListCell else {
