@@ -127,7 +127,6 @@ extension SingleImageViewController {
             guard let self else { return }
             switch result {
             case .success(let imageResult):
-                print(Thread.current)
                 self.placeholderImageView.isHidden = true
                 self.image = imageResult.image
                 self.rescaleAndCenterImageInScrollView(image: imageResult.image)
@@ -177,7 +176,7 @@ private extension SingleImageViewController {
         let alertModel = AlertModel(
             title: "Что-то пошло не так(",
             message: nil,
-            buttons: [(title: "OK", handler: nil)]
+            buttons: [(title: "Ок", handler: nil)]
         )
         alertPresenter.show(alertModel: alertModel)
     }

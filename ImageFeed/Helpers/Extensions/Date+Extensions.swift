@@ -30,7 +30,7 @@ extension Date {
     }
     
     var dateString: String {
-        return Date.displayDateFormatter.string(from: self)
+        Date.displayDateFormatter.string(from: self)
     }
     
 }

@@ -152,6 +152,6 @@ extension ImagesListCell {
     }
     
     func setIsLiked(_ isLiked: Bool) {
-        self.likeButton.setImage(isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
+        likeButton.setImage(isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
     }
 }

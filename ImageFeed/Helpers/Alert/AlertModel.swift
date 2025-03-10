@@ -5,7 +5,7 @@
 //  Created by Danil Otmakhov on 08.02.2025.
 //
 
-import UIKit
+import Foundation
 
 struct AlertModel {
     let title: String
