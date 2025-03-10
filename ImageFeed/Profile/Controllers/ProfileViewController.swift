@@ -19,8 +19,6 @@ final class ProfileViewController: UIViewController {
         return $0
     }(UIImageView())
     
-    // MARK: - Private Properties
-    
     private lazy var nameLabel: UILabel = {
         $0.text = "Danil Otmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)

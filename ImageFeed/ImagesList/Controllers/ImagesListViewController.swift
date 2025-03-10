@@ -41,11 +41,8 @@ final class ImagesListViewController: UIViewController {
     
     // MARK: - Private Methods
     
-    private func configureCell(for cell: ImagesListCell, with indexPath: IndexPath) {
-        cell.configure(with: photos[indexPath.row]) { [weak self] in
-            guard let self else { return }
-            self.tableView.reloadRows(at: [indexPath], with: .automatic)
-        }
+    private func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
+        cell.config(with: photos[indexPath.row])
         cell.delegate = self
     }
 
@@ -130,7 +127,7 @@ extension ImagesListViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        configureCell(for: imageListCell, with: indexPath)
+        configCell(for: imageListCell, with: indexPath)
         return imageListCell
     }
 }
@@ -149,11 +146,12 @@ extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         let photo = photos[indexPath.row]
         
+        let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageHeight = photo.size.height
         let imageWidth = photo.size.width
-        let imageViewWidth = view.bounds.width - 32
+        let imageViewWidth = view.bounds.width - imageInsets.left - imageInsets.right
         
-        return imageHeight * (imageViewWidth / imageWidth)
+        return imageHeight * (imageViewWidth / imageWidth) + imageInsets.top + imageInsets.bottom
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {

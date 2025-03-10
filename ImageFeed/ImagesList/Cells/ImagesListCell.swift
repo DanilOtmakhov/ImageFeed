@@ -122,18 +122,16 @@ extension ImagesListCell {
         cellImageView.kf.cancelDownloadTask()
     }
     
-    func configure(with photo: Photo, completion: @escaping () -> Void) {
+    func config(with photo: Photo) {
         let placeholder = generatePlaceholderImage(bounds.size)
         guard let url = URL(string: photo.thumbImageURL) else { return }
         
-        self.cellImageView.kf.indicatorType = .activity
-        self.cellImageView.kf.setImage(
+        cellImageView.kf.indicatorType = .activity
+        cellImageView.kf.setImage(
             with: url,
-            placeholder: placeholder) { _ in
-                completion()
-            }
-        self.dateLabel.text = photo.createdAt?.dateString
-        self.likeButton.setImage(photo.isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
+            placeholder: placeholder)
+        dateLabel.text = photo.createdAt?.dateString
+        setIsLiked(photo.isLiked)
     }
     
     private func generatePlaceholderImage(_ size: CGSize) -> UIImage {
