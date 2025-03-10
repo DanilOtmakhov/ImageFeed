@@ -9,23 +9,19 @@ import Foundation
 
 final class OAuth2Service {
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     static let shared = OAuth2Service()
     
     // MARK: - Private Properties
     private var lastCode: String?
     private var task: URLSessionTask?
-    private let decoder: JSONDecoder = {
-        $0.keyDecodingStrategy = .convertFromSnakeCase
-        return $0
-    }(JSONDecoder())
     
     // MARK: - Initialization
     
     private init() {}
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
         
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -66,7 +62,7 @@ final class OAuth2Service {
     // MARK: - Private Methods
         
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
-        return URLRequest.makeRequest(
+        URLRequest.makeRequest(
             host: "unsplash.com",
             path: "/oauth/token",
             method: "POST",

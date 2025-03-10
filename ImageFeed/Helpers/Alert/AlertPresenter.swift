@@ -28,10 +28,14 @@ extension AlertPresenter: AlertPresenterProtocol {
             preferredStyle: .alert
         )
         
-        let action = UIAlertAction(title: alertModel.buttonText, style: .default) { _ in
-            alertModel.completion?()
+        for button in alertModel.buttons {
+            let action = UIAlertAction(title: button.title, style: .default) { _ in
+                button.handler?()
+            }
+            alert.addAction(action)
         }
-        alert.addAction(action)
+        
+        alert.preferredAction = alert.actions.last
         
         viewController?.present(alert, animated: true)
     }

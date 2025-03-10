@@ -38,7 +38,7 @@ final class WebViewViewController: UIViewController {
         return $0
     }(UIProgressView())
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     weak var delegate: WebViewViewControllerDelegate?
     

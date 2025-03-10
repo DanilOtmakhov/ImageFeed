@@ -19,8 +19,6 @@ final class ProfileViewController: UIViewController {
         return $0
     }(UIImageView())
     
-    // MARK: - Private Properties
-    
     private lazy var nameLabel: UILabel = {
         $0.text = "Danil Otmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
@@ -51,25 +49,17 @@ final class ProfileViewController: UIViewController {
     // MARK: - Private Properties
     
     private var profileImageServiceObserver: NSObjectProtocol?
+    private lazy var alertPresenter = AlertPresenter(viewController: self)
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
+        setupNotificationObserver()
         
         guard let profile = ProfileService.shared.profile else { return }
         updateProfileDetails(profile: profile)
-        
-        profileImageServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self else { return }
-                self.updateProfileImage()
-            }
         updateProfileImage()
     }
     
@@ -81,7 +71,19 @@ final class ProfileViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func didTapLogoutButton() {
-        OAuth2TokenStorage().token = nil
+        let alertModel = AlertModel(
+            title: "Пока, пока!",
+            message: "Уверены что хотите выйти?",
+            buttons: [
+                (title: "Да", handler: { [weak self] in
+                    guard let self else { return }
+                    ProfileLogoutService.shared.logout()
+                    self.switchToSplashViewController()
+                }),
+                (title: "Нет", handler: nil)
+            ]
+        )
+        alertPresenter.show(alertModel: alertModel)
     }
 }
 
@@ -118,6 +120,24 @@ private extension ProfileViewController {
         ])
     }
     
+    func setupNotificationObserver() {
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self else { return }
+                self.updateProfileImage()
+            }
+    }
+    
+}
+
+// MARK: - Internal Methods
+
+extension ProfileViewController {
+    
     func updateProfileDetails(profile: Profile) {
         nameLabel.text = profile.name
         loginLabel.text = profile.loginName
@@ -135,4 +155,21 @@ private extension ProfileViewController {
             placeholder: UIImage(named: "userpick_no_photo")
         )
     }
+    
+}
+
+// MARK: - Private Methods
+
+private extension ProfileViewController {
+    
+    func switchToSplashViewController() {
+        let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        guard let window = windowScene?.windows.first else {
+            assertionFailure("Invalid window configuration")
+            return
+        }
+        
+        window.rootViewController = SplashViewController()
+    }
+    
 }

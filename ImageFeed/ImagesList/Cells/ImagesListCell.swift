@@ -6,6 +6,11 @@
 //
 
 import UIKit
+import Kingfisher
+
+protocol ImagesListCellDelegate: AnyObject {
+    func imageListCellDidTapLike(_ cell: ImagesListCell)
+}
 
 final class ImagesListCell: UITableViewCell {
     
@@ -28,6 +33,7 @@ final class ImagesListCell: UITableViewCell {
     
     lazy var likeButton: UIButton = {
         $0.setImage(UIImage(named: "like_on"), for: .normal)
+        $0.addTarget(self, action: #selector(didTapLikeButton), for: .touchUpInside)
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UIButton())
@@ -37,9 +43,10 @@ final class ImagesListCell: UITableViewCell {
         return $0
     }(UIView())
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     static let reuseIdentifier = "ImagesListCell"
+    weak var delegate: ImagesListCellDelegate?
     
     // MARK: - Initialization
     
@@ -50,6 +57,12 @@ final class ImagesListCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - Actions
+    
+    @objc private func didTapLikeButton() {
+        delegate?.imageListCellDidTapLike(self)
     }
 }
 
@@ -93,12 +106,52 @@ extension ImagesListCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        let colors: [UIColor] = [.clear, .ypGradient]
-        gradientView.addGradient(
-            for: gradientView,
-            colors: colors,
-            startPoint: CGPoint(x: 0.5, y: 0.0),
-            endPoint: CGPoint(x: 0.5, y: 1.0)
-        )
+        if gradientView.layer.sublayers == nil {
+            let colors: [UIColor] = [.clear, .ypGradient]
+            gradientView.addGradient(
+                for: gradientView,
+                colors: colors,
+                startPoint: CGPoint(x: 0.5, y: 0.0),
+                endPoint: CGPoint(x: 0.5, y: 1.0)
+            )
+        }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImageView.kf.cancelDownloadTask()
+    }
+    
+    func config(with photo: Photo) {
+        let placeholder = generatePlaceholderImage(bounds.size)
+        guard let url = URL(string: photo.thumbImageURL) else { return }
+        
+        cellImageView.kf.indicatorType = .activity
+        cellImageView.kf.setImage(
+            with: url,
+            placeholder: placeholder)
+        dateLabel.text = photo.createdAt?.dateString
+        setIsLiked(photo.isLiked)
+    }
+    
+    private func generatePlaceholderImage(_ size: CGSize) -> UIImage {
+        let icon = UIImage(named: "placeholder")
+        let backgroundColor: UIColor = .ypWhiteAlpha50
+        
+        return UIGraphicsImageRenderer(size: size).image { context in
+            backgroundColor.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+            
+            guard let icon else { return }
+            let iconSize = CGSize(width: size.width * 0.5,
+                                  height: size.height * 0.5)
+            let iconOrigin = CGPoint(x: (size.width - iconSize.width) / 2,
+                                     y: (size.height - iconSize.height) / 2)
+            icon.draw(in: CGRect(origin: iconOrigin, size: iconSize))
+        }
+    }
+    
+    func setIsLiked(_ isLiked: Bool) {
+        self.likeButton.setImage(isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
     }
 }
