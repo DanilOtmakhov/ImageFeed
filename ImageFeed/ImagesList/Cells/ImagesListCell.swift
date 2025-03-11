@@ -105,16 +105,7 @@ extension ImagesListCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        
-        if gradientView.layer.sublayers == nil {
-            let colors: [UIColor] = [.clear, .ypGradient]
-            gradientView.addGradient(
-                for: gradientView,
-                colors: colors,
-                startPoint: CGPoint(x: 0.5, y: 0.0),
-                endPoint: CGPoint(x: 0.5, y: 1.0)
-            )
-        }
+        gradientView.addGradient()
     }
     
     override func prepareForReuse() {

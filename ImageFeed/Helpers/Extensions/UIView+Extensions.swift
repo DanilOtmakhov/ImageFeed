@@ -9,16 +9,23 @@ import UIKit
 
 extension UIView {
     
-    func addGradient(for view: UIView, colors: [UIColor], startPoint: CGPoint, endPoint: CGPoint) {
+    func addGradient(
+        colors: [UIColor] = [.clear, .ypGradient],
+        startPoint: CGPoint = CGPoint(x: 0.5, y: 0.0),
+        endPoint: CGPoint = CGPoint(x: 0.5, y: 1.0)
+    ) {
         layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
         
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = colors.map { $0.cgColor }
-        gradientLayer.startPoint = startPoint
-        gradientLayer.endPoint = endPoint
-        gradientLayer.frame = bounds
+        let gradientLayer = CAGradientLayer.createGradient(
+            frame: bounds,
+            colors: colors.map { $0.cgColor
+            },
+            locations: nil,
+            startPoint: startPoint,
+            endPoint: endPoint,
+            cornerRadius: 0)
         
-        layer.insertSublayer(gradientLayer, at: 0)
+        layer.addSublayer(gradientLayer)
     }
     
     func addGradientWithAnimation(
