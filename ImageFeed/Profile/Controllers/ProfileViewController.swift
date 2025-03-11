@@ -47,7 +47,6 @@ final class ProfileViewController: UIViewController {
     
     private var profileImageServiceObserver: NSObjectProtocol?
     private lazy var alertPresenter = AlertPresenter(viewController: self)
-    private var animationLayers = Set<CALayer>()
     private var isLoading = true
     
     // MARK: - Lifecycle
@@ -69,7 +68,7 @@ final class ProfileViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         if isLoading {
-            setupGradients()
+            setupAnimations()
         }
         profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
     }
@@ -121,44 +120,12 @@ private extension ProfileViewController {
             }
     }
     
-    func setupGradients() {
+    func setupAnimations() {
         view.layoutIfNeeded()
         
-        let profileImageViewGradient = CAGradientLayer.createGradient(
-            frame: profileImageView.bounds,
-            cornerRadius: profileImageView.frame.height / 2
-        )
-        
-        let nameLabelGradient = CAGradientLayer.createGradient(
-            frame: nameLabel.bounds,
-            cornerRadius: nameLabel.frame.height / 2
-        )
-        
-        let loginLabelGradient = CAGradientLayer.createGradient(
-            frame: loginLabel.bounds,
-            cornerRadius: loginLabel.frame.height / 2
-        )
-        
-        let descriptionLabelGradient = CAGradientLayer.createGradient(
-            frame: descriptionLabel.bounds,
-            cornerRadius: descriptionLabel.frame.height / 2
-        )
-        
-        [profileImageViewGradient, nameLabelGradient, loginLabelGradient, descriptionLabelGradient].forEach { animationLayers.insert($0) }
-        
-        profileImageView.layer.addSublayer(profileImageViewGradient)
-        nameLabel.layer.addSublayer(nameLabelGradient)
-        loginLabel.layer.addSublayer(loginLabelGradient)
-        descriptionLabel.layer.addSublayer(descriptionLabelGradient)
-        
-        setupAnimations()
-    }
-    
-    func setupAnimations() {
-        guard !animationLayers.isEmpty else { return }
-        
-        let gradientChangeAnimation = CAGradientLayer.createGradientAnimation()
-        animationLayers.forEach { $0.add(gradientChangeAnimation, forKey: "locationsChange") }
+        [profileImageView, nameLabel, loginLabel, descriptionLabel].forEach {
+            $0.addGradientWithAnimation(cornerRadius: $0.frame.height / 2)
+        }
     }
     
 }
@@ -187,8 +154,7 @@ extension ProfileViewController {
                 case .success(let imageResult):
                     self.profileImageView.image = imageResult.image
                     self.isLoading = false
-                    self.animationLayers.forEach { $0.removeFromSuperlayer() }
-                    self.animationLayers.removeAll()
+                    [profileImageView, nameLabel, loginLabel, descriptionLabel].forEach { $0.removeAllGradients() }
                     self.logoutButton.isHidden = false
                 case .failure:
                     break
