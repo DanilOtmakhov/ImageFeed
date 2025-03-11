@@ -13,28 +13,24 @@ final class ProfileViewController: UIViewController {
     // MARK: - Views
     
     private lazy var profileImageView: UIImageView = {
-        $0.image = UIImage(named: "userpick_no_photo")
         $0.contentMode = .scaleAspectFill
         $0.clipsToBounds = true
         return $0
     }(UIImageView())
     
     private lazy var nameLabel: UILabel = {
-        $0.text = "Danil Otmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         $0.textColor = .ypWhite
         return $0
     }(UILabel())
     
     private lazy var loginLabel: UILabel = {
-        $0.text = "@danilotmakhov (mock data)"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypGray
         return $0
     }(UILabel())
     
     private lazy var descriptionLabel: UILabel = {
-        $0.text = "Hello, world! (mock data)"
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         $0.textColor = .ypWhite
         return $0
@@ -42,6 +38,7 @@ final class ProfileViewController: UIViewController {
     
     private lazy var logoutButton: UIButton = {
         $0.setImage(UIImage(named: "logout"), for: .normal)
+        $0.isHidden = true
         $0.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         return $0
     }(UIButton())
@@ -50,6 +47,8 @@ final class ProfileViewController: UIViewController {
     
     private var profileImageServiceObserver: NSObjectProtocol?
     private lazy var alertPresenter = AlertPresenter(viewController: self)
+    private var animationLayers = Set<CALayer>()
+    private var isLoading = true
     
     // MARK: - Lifecycle
     
@@ -60,31 +59,21 @@ final class ProfileViewController: UIViewController {
         
         guard let profile = ProfileService.shared.profile else { return }
         updateProfileDetails(profile: profile)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         updateProfileImage()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        if isLoading {
+            setupGradients()
+        }
         profileImageView.layer.cornerRadius = profileImageView.frame.width / 2
     }
     
-    // MARK: - Actions
-    
-    @objc private func didTapLogoutButton() {
-        let alertModel = AlertModel(
-            title: "Пока, пока!",
-            message: "Уверены что хотите выйти?",
-            buttons: [
-                (title: "Да", handler: { [weak self] in
-                    guard let self else { return }
-                    ProfileLogoutService.shared.logout()
-                    self.switchToSplashViewController()
-                }),
-                (title: "Нет", handler: nil)
-            ]
-        )
-        alertPresenter.show(alertModel: alertModel)
-    }
 }
 
 // MARK: - Setup
@@ -132,6 +121,46 @@ private extension ProfileViewController {
             }
     }
     
+    func setupGradients() {
+        view.layoutIfNeeded()
+        
+        let profileImageViewGradient = CAGradientLayer.createGradient(
+            frame: profileImageView.bounds,
+            cornerRadius: profileImageView.frame.height / 2
+        )
+        
+        let nameLabelGradient = CAGradientLayer.createGradient(
+            frame: nameLabel.bounds,
+            cornerRadius: nameLabel.frame.height / 2
+        )
+        
+        let loginLabelGradient = CAGradientLayer.createGradient(
+            frame: loginLabel.bounds,
+            cornerRadius: loginLabel.frame.height / 2
+        )
+        
+        let descriptionLabelGradient = CAGradientLayer.createGradient(
+            frame: descriptionLabel.bounds,
+            cornerRadius: descriptionLabel.frame.height / 2
+        )
+        
+        [profileImageViewGradient, nameLabelGradient, loginLabelGradient, descriptionLabelGradient].forEach { animationLayers.insert($0) }
+        
+        profileImageView.layer.addSublayer(profileImageViewGradient)
+        nameLabel.layer.addSublayer(nameLabelGradient)
+        loginLabel.layer.addSublayer(loginLabelGradient)
+        descriptionLabel.layer.addSublayer(descriptionLabelGradient)
+        
+        setupAnimations()
+    }
+    
+    func setupAnimations() {
+        guard !animationLayers.isEmpty else { return }
+        
+        let gradientChangeAnimation = CAGradientLayer.createGradientAnimation()
+        animationLayers.forEach { $0.add(gradientChangeAnimation, forKey: "locationsChange") }
+    }
+    
 }
 
 // MARK: - Internal Methods
@@ -152,8 +181,19 @@ extension ProfileViewController {
         
         profileImageView.kf.setImage(
             with: url,
-            placeholder: UIImage(named: "userpick_no_photo")
-        )
+            placeholder: UIImage(named: "userpick_no_photo")) { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let imageResult):
+                    self.profileImageView.image = imageResult.image
+                    self.isLoading = false
+                    self.animationLayers.forEach { $0.removeFromSuperlayer() }
+                    self.animationLayers.removeAll()
+                    self.logoutButton.isHidden = false
+                case .failure:
+                    break
+                }
+            }
     }
     
 }
@@ -170,6 +210,28 @@ private extension ProfileViewController {
         }
         
         window.rootViewController = SplashViewController()
+    }
+    
+}
+
+// MARK: - Actions
+
+extension ProfileViewController {
+    
+    @objc private func didTapLogoutButton() {
+        let alertModel = AlertModel(
+            title: "Пока, пока!",
+            message: "Уверены что хотите выйти?",
+            buttons: [
+                (title: "Да", handler: { [weak self] in
+                    guard let self else { return }
+                    ProfileLogoutService.shared.logout()
+                    self.switchToSplashViewController()
+                }),
+                (title: "Нет", handler: nil)
+            ]
+        )
+        alertPresenter.show(alertModel: alertModel)
     }
     
 }
