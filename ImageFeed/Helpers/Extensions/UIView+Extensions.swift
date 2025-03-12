@@ -57,10 +57,22 @@ extension UIView {
         gradientLayer.add(animation, forKey: "locationsChange")
     }
     
-    func removeAllGradients() {
+    func removeAllGradients(withDuration duration: CFTimeInterval = 0.3) {
         layer.sublayers?.forEach { sublayer in
-            if sublayer is CAGradientLayer {
-                sublayer.removeFromSuperlayer()
+            if let gradientLayer = sublayer as? CAGradientLayer {
+                let fadeOut = CABasicAnimation(keyPath: "opacity")
+                fadeOut.fromValue = gradientLayer.opacity
+                fadeOut.toValue = 0
+                fadeOut.duration = duration
+                fadeOut.fillMode = .forwards
+                fadeOut.isRemovedOnCompletion = false
+                
+                CATransaction.begin()
+                CATransaction.setCompletionBlock {
+                    gradientLayer.removeFromSuperlayer()
+                }
+                gradientLayer.add(fadeOut, forKey: "fadeOut")
+                CATransaction.commit()
             }
         }
     }

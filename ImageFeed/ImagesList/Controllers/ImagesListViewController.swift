@@ -18,6 +18,7 @@ final class ImagesListViewController: UIViewController {
         $0.delegate = self
         $0.register(ImagesListCell.self, forCellReuseIdentifier: ImagesListCell.reuseIdentifier)
         $0.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+        $0.separatorStyle = .none
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0
     }(UITableView())

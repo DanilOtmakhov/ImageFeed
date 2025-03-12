@@ -14,6 +14,12 @@ protocol ImagesListCellDelegate: AnyObject {
 
 final class ImagesListCell: UITableViewCell {
     
+    private enum CellImageState {
+        case loading
+        case error
+        case finished(UIImage)
+    }
+    
     // MARK: - Views
     
     lazy var cellImageView: UIImageView = {
@@ -38,8 +44,14 @@ final class ImagesListCell: UITableViewCell {
         return $0
     }(UIButton())
     
-    private lazy var gradientView: UIView = {
+    private lazy var dateLabelGradientView: UIView = {
         $0.translatesAutoresizingMaskIntoConstraints = false
+        return $0
+    }(UIView())
+    
+    private lazy var gradientOverlayView: UIView = {
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        $0.isUserInteractionEnabled = false
         return $0
     }(UIView())
     
@@ -47,6 +59,10 @@ final class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     weak var delegate: ImagesListCellDelegate?
+    
+    // MARK: - Private Properties
+    
+    private var imageState: CellImageState = .loading
     
     // MARK: - Initialization
     
@@ -59,26 +75,34 @@ final class ImagesListCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: - Actions
-    
-    @objc private func didTapLikeButton() {
-        delegate?.imageListCellDidTapLike(self)
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        dateLabelGradientView.addGradient()
+        updateViewForStateChange()
     }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cellImageView.kf.cancelDownloadTask()
+        gradientOverlayView.removeAllGradients()
+    }
+    
 }
 
 // MARK: - Setup
 
 extension ImagesListCell {
+    
     private func setupCell() {
         self.backgroundColor = .ypBlack
         contentView.backgroundColor = .clear
         self.selectionStyle = .none
         
-        [cellImageView, likeButton, gradientView].forEach {
+        [cellImageView, likeButton, dateLabelGradientView, gradientOverlayView].forEach {
             self.addSubview($0)
         }
         
-        gradientView.addSubview(dateLabel)
+        dateLabelGradientView.addSubview(dateLabel)
         
         NSLayoutConstraint.activate([
             cellImageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
@@ -91,41 +115,62 @@ extension ImagesListCell {
             likeButton.widthAnchor.constraint(equalToConstant: 42),
             likeButton.heightAnchor.constraint(equalToConstant: 42),
             
-            gradientView.leadingAnchor.constraint(equalTo: cellImageView.leadingAnchor),
-            gradientView.trailingAnchor.constraint(equalTo: cellImageView.trailingAnchor),
-            gradientView.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor),
-            gradientView.heightAnchor.constraint(equalToConstant: 30),
+            dateLabelGradientView.leadingAnchor.constraint(equalTo: cellImageView.leadingAnchor),
+            dateLabelGradientView.trailingAnchor.constraint(equalTo: cellImageView.trailingAnchor),
+            dateLabelGradientView.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor),
+            dateLabelGradientView.heightAnchor.constraint(equalToConstant: 30),
             
-            dateLabel.leadingAnchor.constraint(equalTo: gradientView.leadingAnchor, constant: 8),
-            dateLabel.trailingAnchor.constraint(lessThanOrEqualTo: gradientView.trailingAnchor, constant: -8),
-            dateLabel.bottomAnchor.constraint(equalTo: gradientView.bottomAnchor, constant: -8),
-            dateLabel.topAnchor.constraint(equalTo: gradientView.topAnchor, constant: 4)
+            dateLabel.leadingAnchor.constraint(equalTo: dateLabelGradientView.leadingAnchor, constant: 8),
+            dateLabel.trailingAnchor.constraint(lessThanOrEqualTo: dateLabelGradientView.trailingAnchor, constant: -8),
+            dateLabel.bottomAnchor.constraint(equalTo: dateLabelGradientView.bottomAnchor, constant: -8),
+            dateLabel.topAnchor.constraint(equalTo: dateLabelGradientView.topAnchor, constant: 4),
+            
+            gradientOverlayView.leadingAnchor.constraint(equalTo: cellImageView.leadingAnchor),
+            gradientOverlayView.trailingAnchor.constraint(equalTo: cellImageView.trailingAnchor),
+            gradientOverlayView.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor),
+            gradientOverlayView.topAnchor.constraint(equalTo: cellImageView.topAnchor)
         ])
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        gradientView.addGradient()
-    }
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        cellImageView.kf.cancelDownloadTask()
-    }
+}
+
+// MARK: - Internal Methods
+
+extension ImagesListCell {
     
     func config(with photo: Photo) {
         let placeholder = generatePlaceholderImage(bounds.size)
         guard let url = URL(string: photo.thumbImageURL) else { return }
         
+        imageState = .loading
+        
         cellImageView.kf.indicatorType = .activity
         cellImageView.kf.setImage(
             with: url,
-            placeholder: placeholder)
+            placeholder: placeholder) { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let imageResult):
+                    self.imageState = .finished(imageResult.image)
+                case .failure:
+                    self.imageState = .error
+                }
+            }
         dateLabel.text = photo.createdAt?.dateString
         setIsLiked(photo.isLiked)
     }
     
-    private func generatePlaceholderImage(_ size: CGSize) -> UIImage {
+    func setIsLiked(_ isLiked: Bool) {
+        likeButton.setImage(isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
+    }
+    
+}
+
+// MARK: - Private Methods
+
+private extension ImagesListCell {
+    
+    func generatePlaceholderImage(_ size: CGSize) -> UIImage {
         let icon = UIImage(named: "placeholder")
         let backgroundColor: UIColor = .ypWhiteAlpha50
         
@@ -142,7 +187,26 @@ extension ImagesListCell {
         }
     }
     
-    func setIsLiked(_ isLiked: Bool) {
-        likeButton.setImage(isLiked ? UIImage(named: "like_on") : UIImage(named: "like_off"), for: .normal)
+    func updateViewForStateChange() {
+        switch imageState {
+        case .loading:
+            gradientOverlayView.addGradientWithAnimation(cornerRadius: cellImageView.layer.cornerRadius)
+        case .finished:
+            gradientOverlayView.removeAllGradients()
+        case .error:
+            gradientOverlayView.removeAllGradients()
+            // TODO: error to vc
+        }
     }
+    
+}
+
+// MARK: - Actions
+
+private extension ImagesListCell {
+    
+    @objc func didTapLikeButton() {
+        delegate?.imageListCellDidTapLike(self)
+    }
+    
 }
