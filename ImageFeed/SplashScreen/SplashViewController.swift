@@ -56,8 +56,7 @@ final class SplashViewController: UIViewController {
             return
         }
         
-        let tabBarController = TabBarController()
-        window.rootViewController = tabBarController
+        window.rootViewController = TabBarController()
     }
 }
 
@@ -100,10 +99,13 @@ extension SplashViewController: AuthViewControllerDelegate {
                 let alertModel = AlertModel(
                     title: "Что-то пошло не так(",
                     message: "Не удалось войти в систему",
-                    buttonText: "Ок") { [weak self] in
-                        guard let self else { return }
-                        self.showAuthViewController()
-                    }
+                    buttons: [
+                        (title: "Ок", handler: { [weak self] in
+                            guard let self else { return }
+                            self.showAuthViewController()
+                        })
+                    ]
+                )
                 alertPresenter.show(alertModel: alertModel)
             }
         }

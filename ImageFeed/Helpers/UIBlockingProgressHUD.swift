@@ -16,7 +16,7 @@ final class UIBlockingProgressHUD {
         return UIApplication.shared.windows.first
     }
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
     static func show() {
         window?.isUserInteractionEnabled = false

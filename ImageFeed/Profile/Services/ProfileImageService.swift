@@ -9,7 +9,7 @@ import Foundation
 
 final class ProfileImageService {
     
-    // MARK: - Public Properties
+    // MARK: - Internal Properties
     
     static let shared = ProfileImageService()
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
@@ -18,16 +18,12 @@ final class ProfileImageService {
     
     private(set) var profileImageURL: String?
     private var task: URLSessionTask?
-    private let decoder: JSONDecoder = {
-        $0.keyDecodingStrategy = .convertFromSnakeCase
-        return $0
-    }(JSONDecoder())
     
     // MARK: - Initialization
     
     private init() {}
     
-    // MARK: - Public Methods
+    // MARK: - Internal Methods
     
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
@@ -49,13 +45,14 @@ final class ProfileImageService {
             
             switch result {
             case .success(let userResult):
-                let profileImageURL = userResult.profileImage.small
+                let profileImageURL = userResult.profileImage.large
                 self.profileImageURL = profileImageURL
                 completion(.success(profileImageURL))
                 NotificationCenter.default
                     .post(
                         name: ProfileImageService.didChangeNotification,
-                        object: self)
+                        object: self
+                    )
             case .failure(let error):
                 error.log(object: self)
                 completion(.failure(error))
@@ -65,6 +62,10 @@ final class ProfileImageService {
         }
         self.task = task
         task.resume()
+    }
+    
+    func resetImageURL() {
+        profileImageURL = nil
     }
     
     // MARK: - Private Methods
