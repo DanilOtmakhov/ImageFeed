@@ -20,19 +20,19 @@ final class ProfileViewController: UIViewController {
     
     private lazy var nameLabel: UILabel = {
         $0.font = UIFont.systemFont(ofSize: 23, weight: .bold)
-        $0.textColor = .ypWhite
+        $0.textColor = .clear
         return $0
     }(UILabel())
     
     private lazy var loginLabel: UILabel = {
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        $0.textColor = .ypGray
+        $0.textColor = .clear
         return $0
     }(UILabel())
     
     private lazy var descriptionLabel: UILabel = {
         $0.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        $0.textColor = .ypWhite
+        $0.textColor = .clear
         return $0
     }(UILabel())
     
@@ -152,10 +152,8 @@ extension ProfileViewController {
                 guard let self else { return }
                 switch result {
                 case .success(let imageResult):
-                    self.profileImageView.image = imageResult.image
                     self.isLoading = false
-                    [profileImageView, nameLabel, loginLabel, descriptionLabel].forEach { $0.removeAllGradients() }
-                    self.logoutButton.isHidden = false
+                    self.updateViewForProfilePhotoLoad(imageResult.image)
                 case .failure:
                     break
                 }
@@ -176,6 +174,15 @@ private extension ProfileViewController {
         }
         
         window.rootViewController = SplashViewController()
+    }
+    
+    func updateViewForProfilePhotoLoad(_ image: UIImage) {
+        [profileImageView, nameLabel, loginLabel, descriptionLabel].forEach { $0.removeAllGradients() }
+        logoutButton.isHidden = false
+        profileImageView.setImageWithFade(image, duration: 1)
+        nameLabel.setTextColorWithFade(to: .ypWhite, duration: 1)
+        loginLabel.setTextColorWithFade(to: .ypGray, duration: 1)
+        descriptionLabel.setTextColorWithFade(to: .ypWhite, duration: 1)
     }
     
 }
