@@ -8,11 +8,18 @@
 import Foundation
 
 extension URLRequest {
+    
+    enum HTTPMethod: String {
+        case get = "GET"
+        case post = "POST"
+        case delete = "DELETE"
+    }
+    
     static func makeRequest(
         scheme: String = "https",
         host: String,
         path: String,
-        method: String = "GET",
+        method: HTTPMethod = .get,
         queryItems: [URLQueryItem]? = nil,
         headers: [String: String]? = nil,
         body: Data? = nil
@@ -29,7 +36,7 @@ extension URLRequest {
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = method
+        request.httpMethod = method.rawValue
         request.httpBody = body
 
         headers?.forEach { key, value in
@@ -38,5 +45,6 @@ extension URLRequest {
 
         return request
     }
+    
 }
 

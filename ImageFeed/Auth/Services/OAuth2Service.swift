@@ -65,7 +65,7 @@ final class OAuth2Service {
         URLRequest.makeRequest(
             host: "unsplash.com",
             path: "/oauth/token",
-            method: "POST",
+            method: .post,
             queryItems: [
                 URLQueryItem(name: "client_id", value: Constants.accessKey),
                 URLQueryItem(name: "client_secret", value: Constants.secretKey),
