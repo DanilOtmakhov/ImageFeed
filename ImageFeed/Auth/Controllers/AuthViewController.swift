@@ -53,7 +53,13 @@ final class AuthViewController: UIViewController {
     
     @objc private func didTapLoginButton() {
         let webViewViewController = WebViewViewController()
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        
+        webViewPresenter.view = webViewViewController
+        webViewViewController.presenter = webViewPresenter
         webViewViewController.delegate = self
+        
         webViewViewController.modalPresentationStyle = .fullScreen
         present(webViewViewController, animated: true)
     }
