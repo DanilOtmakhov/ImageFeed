@@ -131,7 +131,7 @@ extension ProfileViewController {
         
     func setProfileDetails(profile: Profile) {
         nameLabel.text = profile.name
-        loginLabel.text = profile.loginName
+        loginLabel.text = profile.login
         descriptionLabel.text = profile.bio
     }
     
