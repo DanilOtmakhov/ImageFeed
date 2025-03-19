@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AlertModel {
+public struct AlertModel {
     let title: String
     let message: String?
     let buttons: [(title: String, handler: (() -> Void)?)]

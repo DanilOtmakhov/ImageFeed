@@ -8,7 +8,15 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+public protocol ProfileViewControllerProtocol: AnyObject {
+    var presenter: ProfilePresenterProtocol? { get set }
+    func setProfileDetails(profile: Profile)
+    func setProfileImage(with url: URL)
+    func show(_ alertModel: AlertModel)
+    func switchToSplashViewController()
+}
+
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
     
     // MARK: - Views
     
@@ -43,9 +51,12 @@ final class ProfileViewController: UIViewController {
         return $0
     }(UIButton())
     
+    // MARK: - Internal Properties
+    
+    var presenter: ProfilePresenterProtocol?
+    
     // MARK: - Private Properties
     
-    private var profileImageServiceObserver: NSObjectProtocol?
     private lazy var alertPresenter = AlertPresenter(viewController: self)
     private var isLoading = true
     
@@ -54,15 +65,8 @@ final class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
-        setupNotificationObserver()
         
-        guard let profile = ProfileService.shared.profile else { return }
-        updateProfileDetails(profile: profile)
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        updateProfileImage()
+        presenter?.viewDidLoad()
     }
     
     override func viewDidLayoutSubviews() {
@@ -78,6 +82,7 @@ final class ProfileViewController: UIViewController {
 // MARK: - Setup
 
 private extension ProfileViewController {
+    
     func setupViewController() {
         view.backgroundColor = .ypBlack
         
@@ -108,17 +113,7 @@ private extension ProfileViewController {
         ])
     }
     
-    func setupNotificationObserver() {
-        profileImageServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self else { return }
-                self.updateProfileImage()
-            }
-    }
+
     
     func setupAnimations() {
         view.layoutIfNeeded()
@@ -133,38 +128,26 @@ private extension ProfileViewController {
 // MARK: - Internal Methods
 
 extension ProfileViewController {
-    
-    func updateProfileDetails(profile: Profile) {
+        
+    func setProfileDetails(profile: Profile) {
         nameLabel.text = profile.name
         loginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
     }
     
-    func updateProfileImage() {
-        guard
-            let profileImageURL = ProfileImageService.shared.profileImageURL,
-            let url = URL(string: profileImageURL)
-        else { return }
-        
+    func setProfileImage(with url: URL) {
         profileImageView.kf.setImage(
-            with: url,
-            placeholder: UIImage(named: "userpick_no_photo")) { [weak self] result in
+            with: url) { [weak self] result in
                 guard let self else { return }
                 switch result {
                 case .success(let imageResult):
                     self.isLoading = false
                     self.updateViewForProfilePhotoLoad(imageResult.image)
                 case .failure:
-                    break
+                    self.updateViewForProfilePhotoLoad(UIImage(named: "userpick")!)
                 }
             }
     }
-    
-}
-
-// MARK: - Private Methods
-
-private extension ProfileViewController {
     
     func switchToSplashViewController() {
         let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
@@ -175,6 +158,16 @@ private extension ProfileViewController {
         
         window.rootViewController = SplashViewController()
     }
+    
+    func show(_ alertModel: AlertModel) {
+        alertPresenter.show(alertModel: alertModel)
+    }
+    
+}
+
+// MARK: - Private Methods
+
+private extension ProfileViewController {
     
     func updateViewForProfilePhotoLoad(_ image: UIImage) {
         [profileImageView, nameLabel, loginLabel, descriptionLabel].forEach { $0.removeAllGradients() }
@@ -192,19 +185,7 @@ private extension ProfileViewController {
 extension ProfileViewController {
     
     @objc private func didTapLogoutButton() {
-        let alertModel = AlertModel(
-            title: "Пока, пока!",
-            message: "Уверены что хотите выйти?",
-            buttons: [
-                (title: "Да", handler: { [weak self] in
-                    guard let self else { return }
-                    ProfileLogoutService.shared.logout()
-                    self.switchToSplashViewController()
-                }),
-                (title: "Нет", handler: nil)
-            ]
-        )
-        alertPresenter.show(alertModel: alertModel)
+        presenter?.userDidRequestLogout()
     }
     
 }
