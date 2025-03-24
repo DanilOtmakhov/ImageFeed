@@ -23,13 +23,23 @@ extension TabBarController {
         view.backgroundColor = .ypBlack
         
         let imagesListViewController = ImagesListViewController()
+        let imagesListPresenter = ImagesListPresenter()
+        
+        imagesListPresenter.view = imagesListViewController
+        imagesListViewController.presenter = imagesListPresenter
+        
         imagesListViewController.tabBarItem = UITabBarItem(
             title: nil,
             image: UIImage(named: "tab_main_active"),
             selectedImage: nil
         )
-            
+        
+        let profileViewPresenter = ProfilePresenter()
         let profileViewController = ProfileViewController()
+        
+        profileViewPresenter.view = profileViewController
+        profileViewController.presenter = profileViewPresenter
+        
         profileViewController.tabBarItem = UITabBarItem(
             title: nil,
             image: UIImage(named: "tab_profile_active"),

@@ -38,6 +38,7 @@ final class SingleImageViewController: UIViewController {
     private lazy var backButton: UIButton = {
         $0.setImage(UIImage(named: "backward_white"), for: .normal)
         $0.backgroundColor = .clear
+        $0.accessibilityIdentifier = "Back"
         $0.addTarget(self, action: #selector(didTapBackButton), for: .touchUpInside)
         $0.translatesAutoresizingMaskIntoConstraints = false
         return $0

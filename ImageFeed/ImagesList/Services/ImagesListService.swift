@@ -73,7 +73,7 @@ final class ImagesListService {
     
     func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
         guard
-            let request = makeChangeLikeRequest(photoId: photoId, with: isLike ? "POST" : "DELETE")
+            let request = makeChangeLikeRequest(photoId: photoId, with: isLike ? .post : .delete)
         else {
             let error = NetworkError.invalidRequest
             error.log(object: self)
@@ -128,7 +128,7 @@ final class ImagesListService {
         )
     }
     
-    private func makeChangeLikeRequest(photoId: String, with method: String) -> URLRequest? {
+    private func makeChangeLikeRequest(photoId: String, with method: URLRequest.HTTPMethod) -> URLRequest? {
         guard let token = OAuth2TokenStorage().token else {
             assertionFailure("Missing auth token")
             return nil

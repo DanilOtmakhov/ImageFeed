@@ -8,11 +8,17 @@
 import UIKit
 import Kingfisher
 
-final class ImagesListViewController: UIViewController {
+public protocol ImagesListViewControllerProtocol: AnyObject {
+    var presenter: ImagesListPresenterProtocol? { get set }
+    func updateTableViewAnimated(from: Int, to: Int)
+    func showSomethingWentWrongError(_ handler: (() -> Void)?)
+}
+
+final class ImagesListViewController: UIViewController, ImagesListViewControllerProtocol {
     
     // MARK: - Views
     
-    private lazy var tableView: UITableView = {
+    lazy var tableView: UITableView = {
         $0.backgroundColor = .ypBlack
         $0.dataSource = self
         $0.delegate = self
@@ -23,11 +29,12 @@ final class ImagesListViewController: UIViewController {
         return $0
     }(UITableView())
     
+    // MARK: - Internal Properties
+    
+    var presenter: ImagesListPresenterProtocol?
+    
     // MARK: - Private Properties
     
-    private var photos: [Photo] = []
-    private var imagesListServiceObserver: NSObjectProtocol?
-    private var imagesListServiceErrorObserver: NSObjectProtocol?
     private lazy var alertPresenter = AlertPresenter(viewController: self)
     
     // MARK: - Lifecycle
@@ -35,33 +42,27 @@ final class ImagesListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewController()
-        setupNotificationObserver()
-        
-        ImagesListService.shared.fetchPhotosNextPage()
+        presenter?.viewDidLoad()
     }
     
     // MARK: - Private Methods
     
     private func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
-        cell.config(with: photos[indexPath.row])
+        guard let photo = presenter?.photo(at: indexPath.row) else { preconditionFailure("Index out of range") }
+        cell.config(with: photo)
         cell.delegate = self
     }
 
-    private func updateTableViewAnimated() {
-        let oldCount = photos.count
-        let newCount = ImagesListService.shared.photos.count
-        photos = ImagesListService.shared.photos
-        
-        guard oldCount != newCount else { return }
+    func updateTableViewAnimated(from: Int, to: Int) {
         tableView.performBatchUpdates {
-            let indexPaths = (oldCount..<newCount).map {
+            let indexPaths = (from..<to).map {
                 IndexPath(row: $0, section: 0)
             }
             tableView.insertRows(at: indexPaths, with: .automatic)
         }
     }
     
-    private func showSomethingWentWrongError(_ handler: (() -> Void)?) {
+    func showSomethingWentWrongError(_ handler: (() -> Void)? = nil) {
         let alertModel = AlertModel(
             title: "Что-то пошло не так(",
             message: nil,
@@ -69,11 +70,13 @@ final class ImagesListViewController: UIViewController {
         )
         alertPresenter.show(alertModel: alertModel)
     }
+    
 }
 
 // MARK: - Setup
 
 private extension ImagesListViewController {
+    
     func setupViewController() {
         view.backgroundColor = .ypBlack
         view.addSubview(tableView)
@@ -86,38 +89,15 @@ private extension ImagesListViewController {
         ])
     }
     
-    func setupNotificationObserver() {
-        imagesListServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ImagesListService.didChangeNotification,
-                object: nil,
-                queue: .main,
-                using: { [weak self] _ in
-                    guard let self else { return }
-                    self.updateTableViewAnimated()
-                }
-            )
-        
-        imagesListServiceErrorObserver = NotificationCenter.default
-            .addObserver(
-                forName: ImagesListService.didFailNotification,
-                object: nil,
-                queue: .main,
-                using: { [weak self] _ in
-                    guard let self else { return }
-                    self.showSomethingWentWrongError {
-                        ImagesListService.shared.fetchPhotosNextPage()
-                    }
-                }
-            )
-    }
 }
 
 // MARK: - UITableViewDataSource
 
 extension ImagesListViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        photos.count
+        guard let presenter else { preconditionFailure("Presenter doesn't exist") }
+        return presenter.photosCount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -131,6 +111,7 @@ extension ImagesListViewController: UITableViewDataSource {
         configCell(for: imageListCell, with: indexPath)
         return imageListCell
     }
+    
 }
 
 // MARK: - UITableViewDelegate
@@ -138,14 +119,18 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let presenter else { preconditionFailure("Presenter doesn't exist") }
+        guard let photo = presenter.photo(at: indexPath.row) else { preconditionFailure("Index out of range") }
+        
         let singleImageViewController = SingleImageViewController()
-        singleImageViewController.configure(with: photos[indexPath.row])
+        singleImageViewController.configure(with: photo)
         singleImageViewController.modalPresentationStyle = .fullScreen
         present(singleImageViewController, animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        let photo = photos[indexPath.row]
+        guard let presenter else { preconditionFailure("Presenter doesn't exist") }
+        guard let photo = presenter.photo(at: indexPath.row) else { preconditionFailure("Index out of range") }
         
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageHeight = photo.size.height
@@ -156,33 +141,31 @@ extension ImagesListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard indexPath.row + 1 == photos.count else { return }
-        ImagesListService.shared.fetchPhotosNextPage()
+        if ProcessInfo.processInfo.arguments.contains("UITests") { return }
+        presenter?.fetchNextPhotosPageIfNeeded(indexPath.row)
     }
 }
 
 // MARK: - ImagesListCellDelegate
 
 extension ImagesListViewController: ImagesListCellDelegate {
+    
     func imageListCellDidTapLike(_ cell: ImagesListCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         
-        let photo = photos[indexPath.row]
-        
         UIBlockingProgressHUD.show()
-        
-        ImagesListService.shared.changeLike(photoId: photo.id, isLike: !photo.isLiked) { [weak self] result in
-            UIBlockingProgressHUD.dismiss()
-            
+        presenter?.changeLikeForPhoto(at: indexPath.row) { [weak self] result in
             guard let self else { return }
+            
+            UIBlockingProgressHUD.dismiss()
             switch result {
-            case .success:
-                self.photos = ImagesListService.shared.photos
-                cell.setIsLiked(self.photos[indexPath.row].isLiked)
+            case .success(let isLiked):
+                cell.setIsLiked(isLiked)
             case .failure:
-                self.showSomethingWentWrongError(nil)
+                self.showSomethingWentWrongError()
             }
         }
     }
+    
 }
 

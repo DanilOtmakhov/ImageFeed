@@ -27,6 +27,7 @@ final class AuthViewController: UIViewController {
         $0.backgroundColor = .white
         $0.layer.masksToBounds = true
         $0.layer.cornerRadius = 16
+        $0.accessibilityIdentifier = "Authenticate" 
         $0.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
         return $0
     }(UIButton())
@@ -53,7 +54,13 @@ final class AuthViewController: UIViewController {
     
     @objc private func didTapLoginButton() {
         let webViewViewController = WebViewViewController()
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        
+        webViewPresenter.view = webViewViewController
+        webViewViewController.presenter = webViewPresenter
         webViewViewController.delegate = self
+        
         webViewViewController.modalPresentationStyle = .fullScreen
         present(webViewViewController, animated: true)
     }
