@@ -47,6 +47,7 @@ final class ProfileViewController: UIViewController, ProfileViewControllerProtoc
     private lazy var logoutButton: UIButton = {
         $0.setImage(UIImage(named: "logout"), for: .normal)
         $0.isHidden = true
+        $0.accessibilityIdentifier = "Logout"
         $0.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
         return $0
     }(UIButton())

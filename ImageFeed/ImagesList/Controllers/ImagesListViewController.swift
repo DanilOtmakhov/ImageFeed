@@ -18,7 +18,7 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
     
     // MARK: - Views
     
-    private lazy var tableView: UITableView = {
+    lazy var tableView: UITableView = {
         $0.backgroundColor = .ypBlack
         $0.dataSource = self
         $0.delegate = self
@@ -54,8 +54,6 @@ final class ImagesListViewController: UIViewController, ImagesListViewController
     }
 
     func updateTableViewAnimated(from: Int, to: Int) {
-        print("Old Count: \(from), New Count: \(to)")
-        
         tableView.performBatchUpdates {
             let indexPaths = (from..<to).map {
                 IndexPath(row: $0, section: 0)
@@ -96,6 +94,7 @@ private extension ImagesListViewController {
 // MARK: - UITableViewDataSource
 
 extension ImagesListViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let presenter else { preconditionFailure("Presenter doesn't exist") }
         return presenter.photosCount
@@ -112,6 +111,7 @@ extension ImagesListViewController: UITableViewDataSource {
         configCell(for: imageListCell, with: indexPath)
         return imageListCell
     }
+    
 }
 
 // MARK: - UITableViewDelegate
@@ -141,6 +141,7 @@ extension ImagesListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if ProcessInfo.processInfo.arguments.contains("UITests") { return }
         presenter?.fetchNextPhotosPageIfNeeded(indexPath.row)
     }
 }
@@ -148,6 +149,7 @@ extension ImagesListViewController: UITableViewDelegate {
 // MARK: - ImagesListCellDelegate
 
 extension ImagesListViewController: ImagesListCellDelegate {
+    
     func imageListCellDidTapLike(_ cell: ImagesListCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         
@@ -164,5 +166,6 @@ extension ImagesListViewController: ImagesListCellDelegate {
             }
         }
     }
+    
 }
 

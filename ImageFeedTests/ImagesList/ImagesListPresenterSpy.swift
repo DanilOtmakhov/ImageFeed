@@ -10,11 +10,12 @@
 final class ImagesListPresenterSpy: ImagesListPresenterProtocol {
     
     var viewDidLoadCalled = false
-    var changeLikeForPhotoCalled = false
+    var photosCountCalled = false
+    var fetchNextPhotosPageIfNeededCalled = false
     
     var view: ImagesListViewControllerProtocol?
     
-    var photosCount: Int = 0
+    var photosCount: Int = 10
     
     func viewDidLoad() {
         viewDidLoadCalled = true
@@ -29,11 +30,11 @@ final class ImagesListPresenterSpy: ImagesListPresenterProtocol {
     }
     
     func fetchNextPhotosPageIfNeeded(_ index: Int) {
-        
+        fetchNextPhotosPageIfNeededCalled = true
     }
     
     func changeLikeForPhoto(at index: Int, _ completion: @escaping (Result<Bool, any Error>) -> Void) {
-        changeLikeForPhotoCalled = true
+        
     }
     
 }

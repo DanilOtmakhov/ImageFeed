@@ -30,7 +30,7 @@ final class ProfileViewControllerSpy: ProfileViewControllerProtocol {
     }
     
     func switchToSplashViewController() {
-        switchToSplashViewControllerCalled = true
+        
     }
     
 }

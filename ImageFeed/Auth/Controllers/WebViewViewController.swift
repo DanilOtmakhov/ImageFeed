@@ -26,6 +26,7 @@ final class WebViewViewController: UIViewController, WebViewViewControllerProtoc
     
     private lazy var webView: WKWebView = {
         $0.navigationDelegate = self
+        $0.accessibilityIdentifier = "UnsplashWebView"
         return $0
     }(WKWebView())
     

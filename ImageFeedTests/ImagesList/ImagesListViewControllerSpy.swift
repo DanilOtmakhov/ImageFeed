@@ -9,12 +9,10 @@
 
 final class ImagesListViewControllerSpy: ImagesListViewControllerProtocol {
     
-    var updateTableViewAnimatedCalled = false
-    
     var presenter: ImagesListPresenterProtocol?
     
     func updateTableViewAnimated(from: Int, to: Int) {
-        updateTableViewAnimatedCalled = true
+        
     }
     
     func showSomethingWentWrongError(_ handler: (() -> Void)?) {

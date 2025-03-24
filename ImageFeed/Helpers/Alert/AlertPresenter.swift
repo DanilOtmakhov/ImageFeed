@@ -27,11 +27,13 @@ extension AlertPresenter: AlertPresenterProtocol {
             message: alertModel.message,
             preferredStyle: .alert
         )
+        alert.view.accessibilityIdentifier = alertModel.title
         
         for button in alertModel.buttons {
             let action = UIAlertAction(title: button.title, style: .default) { _ in
                 button.handler?()
             }
+            action.accessibilityIdentifier = button.title
             alert.addAction(action)
         }
         

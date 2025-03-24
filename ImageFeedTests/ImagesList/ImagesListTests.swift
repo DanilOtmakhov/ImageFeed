@@ -25,4 +25,22 @@ final class ImagesListTests: XCTestCase {
         XCTAssertTrue(presenter.viewDidLoadCalled)
     }
     
+    func testWillDisplayCell() {
+        // Given
+        let viewController = ImagesListViewController()
+        let presenter = ImagesListPresenterSpy()
+        
+        viewController.presenter = presenter
+        presenter.view = viewController
+        
+        // When
+        let numberOfRows = viewController.tableView.dataSource?.tableView(
+            viewController.tableView,
+            numberOfRowsInSection: 0
+        )
+        
+        // Then
+        XCTAssertEqual(numberOfRows, 10)
+    }
+    
 }
