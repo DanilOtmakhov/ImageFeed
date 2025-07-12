@@ -14,7 +14,8 @@ ImageFeed is a multi-page iOS application for browsing images via the Unsplash A
 
 ## 📌 Tech Stack  
 - Swift  
-- UIKit  
+- UIKit
+- MVP
 - OAuth 2.0
 - Unsplash API  
 
